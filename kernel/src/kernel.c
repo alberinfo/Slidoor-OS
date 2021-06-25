@@ -9,8 +9,6 @@ void kmain()
     dosetup(mboot_addr+0xFFFF800000000000, &kernel_end);
     printf("\nBooted with %s\n>", get_mboot_info(multiboot_tag_TYPE_BOOT_LOADER_NAME));
 
-    printf("S3: %b, S4: %b, S5: %b\n", AcpiWalkNamespace("\\_S3_") != 0, AcpiWalkNamespace("\\_S4_") != 0, AcpiWalkNamespace("\\_S5_") != 0);
-
     last_str = "";
     end_str = 0;
     while(1)
