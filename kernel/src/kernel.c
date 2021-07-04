@@ -93,7 +93,7 @@ void kmain()
                             printf("Serial number: %s\nModel number: %s\nFirmware revision: %s\n", info->SerNum, info->ModNum, info->FirmRev);
                         } else if(strEql(ata_devices.devices[number].type, "Unknown") || strEql(ata_devices.devices[number].type, "PATAPI") || strEql(ata_devices.devices[number].type, "SATAPI")) {
                             struct ata_identify_packet_t *info = ata_devices.devices[number].IDENTIFY_addr;
-                            printf("Serial number: %s\nModel number: %s\nFirmware revision: %s\n", info->SerNum, info->ModNum, info->FirmRev); 
+                            printf("Serial number: %s\nModel number: %s\nFirmware revision: %s\n", info->SerNum, info->ModNum, info->FirmRev);
                         }
                     }
                 } else {

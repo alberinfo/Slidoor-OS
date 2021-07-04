@@ -16,7 +16,7 @@ void heapAddBlock(uint64 base_addr, uint64 size)
     
     size -= sizeof(struct heap_block_t);
     heap_block->size = size;
-    heap_block->max = size / global_heap.block_size * 4;
+    heap_block->max = size / global_heap.block_size;
     //heap_block->max = (heap_block->max / global_heap.block_size) * global_heap.block_size < heap_block->max ? (heap_block->max / global_heap.block_size) + 1 : heap_block->max / global_heap.block_size;
     heap_block->start = 0;
 
@@ -39,7 +39,7 @@ void *heap_alloc(uint64 size, uint64 alignment, uint32 flags)
                 i = (heap[i] >> 1) +1;
                 continue;
             }
-            uint64 ptr = i * global_heap.block_size + (uint64)heap + heap_block->max;
+            uint64 ptr = i * global_heap.block_size + (uint64)heap + heap_block->max * 4;
 
             if(ptr % alignment != 0)
             {
@@ -67,15 +67,16 @@ void *heap_alloc(uint64 size, uint64 alignment, uint32 flags)
 
 void heap_free(void *addr)
 {
+    //return;
     for(struct heap_block_t *heap_block = global_heap.heap; heap_block; heap_block = heap_block->next)
     {
         uint32 *heap = &heap_block[1];
-        if(!(addr >= heap && addr <= (uint64)heap + heap_block->size)) continue;
+        if(!(addr > heap && addr < (uint64)heap + heap_block->size)) continue;
 
-        addr = (uint64)addr - (uint64)heap - heap_block->max;
+        addr = (uint64)addr - (uint64)heap - heap_block->max * 4;
         uint32 startpoint = (uint64)addr / global_heap.block_size;
         uint32 endpoint = heap[startpoint] >> 1;
-        heap[startpoint] &= ~1;
+        heap[startpoint] &= ~((uint32)1);
         if(endpoint + 1 < heap_block->max)
         {
             if(!(heap[endpoint + 1] & 1))
@@ -86,9 +87,11 @@ void heap_free(void *addr)
         }
         for(int i = startpoint-1; i >= heap_block->start; i--)
         {
+            if(heap[i] == 0) continue;
             if(heap[i] & 1) break;
-            heap[i] = heap[i+1];
-            heap[i+1] = 0;
+            heap[i] = heap[startpoint];
+            heap[startpoint] = 0;
+            startpoint = i;
         }
         break;
     }
