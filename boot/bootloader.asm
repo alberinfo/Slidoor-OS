@@ -1,6 +1,6 @@
 [BITS 32]
 
-%define STACK_SIZE 0x1000 ;This MAY be not enough. Or maybe it is. who knows (check &/ change in case of those strange unreasonable errors)
+%define STACK_SIZE 0x20000 ;This MAY be not enough. Or maybe it is. who knows (check &/ change in case of those strange unreasonable errors)
 
 HIGHER_VMA equ 0xFFFF800000000000
 high_PML4_idx equ (HIGHER_VMA >> 39) & 0x1FF
@@ -18,9 +18,11 @@ mboot_inforeq_start:
     dw 1
     dw 0
     dd mboot_inforeq_end - mboot_inforeq_start
-    dd 2
-    dd 6
-    dd 8
+    dd 2 ;Boot loader name
+    dd 6 ;Memory map
+    dd 8 ;Framebuffer info
+    dd 14 ;Acpi 1.0 Rsdp info
+    dd 15 ;Acpi 2.0+ Rsdp info
 mboot_inforeq_end:
 
     align 8

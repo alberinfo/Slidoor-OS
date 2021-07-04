@@ -611,9 +611,11 @@ uint32 stroccr(char* str, const char c)
 	return i;
 }
 
+#include "../drivers/sleep/sleep.h"
+
 uint8 strEql(string ch1,string ch2)                     
 {
-    uint8 result = 1;
+	uint8 result = 1;
     uint8 size = strlen(ch1);
     if(size != strlen(ch2)) result =0;
     else 

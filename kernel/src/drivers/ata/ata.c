@@ -272,6 +272,8 @@ string ata_identify_word2ascii(uint16 *buf, uint8 start, uint8 end)
             break;
         }
     }
+    str[stridx] = '\0';
+    //printf("ATA ID TO ASCII: %s\n", str);
     return str;
 }
 
@@ -385,7 +387,7 @@ void ata_identify(struct ata_dev_t *ata_device, int drive_num /*only used in cas
     ata_device->IDENTIFY_addr = (uint64)IDENTIFY;
     free(buffer);
     if(IDENTIFY->UDMASup >> 8 || IDENTIFY->MDMASup >> 8) {ata_device->DMA = true; return;}
-    uint32 prdt_addr = ((uint64)kmalloc_aligned(0x8000, 0x10000)) - 0xFFFF800000000000; //Alloc the double, so we'll be able to align it;
+    uint32 prdt_addr = ((uint64)kmalloc_aligned(0x8000, 0x10000)) - 0xFFFF800000000000;
     ata_device->prdt_addr = prdt_addr;
     for(int i = 6, ander = 1 << 6; i >= 0; i--)
     {
@@ -449,7 +451,7 @@ void init_ata(uint32 busmaster) //soft reset ata bus (ata0 and ata1, but only if
     ata_queue.first_element_addr = 0;
     ata_queue.last_element_addr = 0;
     ata_transfer_in_progress = false;
-    
+
     struct ata_dev_t temporary_dev;
     temporary_dev.ctrl_base = GLOBAL_ATA0_CTRL;
     ata_soft_reset(&temporary_dev);    
@@ -460,7 +462,7 @@ void init_ata(uint32 busmaster) //soft reset ata bus (ata0 and ata1, but only if
         ata_add_drive(GLOBAL_ATA0_IO, GLOBAL_ATA0_CTRL, busmaster, 0, ATA_MASTER);
         ata_identify_type(&ata_devices.devices[ata_devices.dev_amount-1], ata_devices.dev_amount-1);
     }
-    
+
     ata_change_drive(GLOBAL_ATA0_IO, GLOBAL_ATA0_CTRL, ATA_SLAVE);
     
     bus = inportb(GLOBAL_ATA0_CTRL + ALT_STT_REG);
@@ -511,17 +513,16 @@ void ata_read(struct ata_dev_t *ata_device, uint64 lba, uint16 sectors, uint16 *
 void ata_write(struct ata_dev_t *ata_device, uint64 lba, uint16 sectors, uint16 *buffer, uint8 *completion_addr)
 {
     int ATAPI = 0; //Is this an atapi device?
-    if(ata_device->type == "PATAPI" || ata_device->type == "SATAPI") ATAPI = 1;
-    
+    if(strcmp(ata_device->type, "PATAPI") == 0 || strcmp(ata_device->type, "SATAPI") == 0) ATAPI = 1;
     //Here we'll copy the contents of the buffer, in order to save it from modifications before writing.
-    uint16 *actual_buffer;
+    uint16 *actual_buffer = 0;
     if(!ATAPI)
     {
-        actual_buffer = kmalloc(2048*sectors);
-        memcpy_fast(actual_buffer, buffer, 2048*sectors);
-    } else {
         actual_buffer = kmalloc(512*sectors);
         memcpy_fast(actual_buffer, buffer, 512*sectors);
+    } else {
+        actual_buffer = kmalloc(2048*sectors);
+        memcpy_fast(actual_buffer, buffer, 2048*sectors);
     }
     ata_queue_add(ata_device, lba,sectors, 1, ATAPI, actual_buffer, completion_addr);
     ata_execute_queue(); //If we did not execute any of the ata requests, then theres either a command in progress or the device is not ready

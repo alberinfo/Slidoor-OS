@@ -223,9 +223,10 @@ void CheckFunction(uint8 bus, uint8 device, uint8 function)
     if(PciDevice.Class == 1 && PciDevice.SubClass == 1)
     {
         init_ata(PciDevice.PciDefaultHeader.BAR[4] & 0xFFFFFFFC);//Initialize queue,etc but now we provide the busmaster information
-        pciWrite16(address | 4, pciRead16(address | 4) | 7); //Enable I/O Flag, Mem flag & Bus Enable flag
-        pciWrite16(address | 5, pciRead16(address | 5) | 7); //Same as above but for channel 1
-        pciWrite16(address | 0x48, 0xF); //Enable UDMA on the controller
+        //pciWrite16(address | 4, pciRead16(address | 4) | 7); //Enable I/O Flag, Mem flag & Bus Enable flag
+        //pciWrite16(address | 5, pciRead16(address | 5) | 7); //Same as above but for channel 1
+        //pciWrite16(address | 0x48, 0xF); //Enable UDMA on the controller
+        //If i do those three pciWrite16 then the ata controller stops working on qemu. WTF
     }
     //End of checking :)
     lastPciDevice++;
@@ -237,8 +238,9 @@ void CheckFunction(uint8 bus, uint8 device, uint8 function)
 
 void PciInit()
 {
+
     lastPciDevice = 0;
-    PciDevices = kmalloc(32); //Up to 32 devices
+    PciDevices = kmalloc(32 * 8); //Up to 32 devices per bus, 8 buses in total
     struct PciDevice_t PciDevice;
     ReadConfigData(&PciDevice, 0);
     if(!(PciDevice.HeaderType & 0x80)) //Single Pci host Controller

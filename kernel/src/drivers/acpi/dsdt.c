@@ -1,26 +1,5 @@
 #include "dsdt.h"
 
-/*                          */
-/*------- DEPRECATED -------*/
-/*                          */
-
-/*bool acpiParseSx(char *ptr, struct ACPI_Sx_t *Sx)
-{
-    // check for valid AML structure
-    if((*(ptr-1) == 0x08 || (*(ptr-2) == 0x08 && *(ptr-1) == '\\')) && *(ptr+4) == 0x12 )
-    {
-        ptr += 5;
-        ptr += ((*ptr &0xC0)>>6) +2;   // calculate PkgLength size
-        if (*ptr == 0x0A) ptr++;   // skip byteprefix
-        Sx->SLPYPa = *(ptr)<<10;
-        ptr++;
-        if (*ptr == 0x0A) ptr++;   // skip byteprefix
-        Sx->SLPYPb = *(ptr)<<10;
-        return true; //Sx has been parsed correctly
-    }
-    return false; //Sx hasn't been parsed correctly
-}*/
-
 //this func also supports SSDT parsing, since they're pretty much the same structure
 
 bool acpiParseDSDT(uint32 *ptr)

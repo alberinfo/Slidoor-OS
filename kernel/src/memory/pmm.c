@@ -14,10 +14,10 @@ void heapAddBlock(uint64 base_addr, uint64 size)
     heap_block->next = global_heap.heap;
     global_heap.heap = heap_block;
     
-    heap_block->size = size;
     size -= sizeof(struct heap_block_t);
+    heap_block->size = size;
     heap_block->max = size / global_heap.block_size * 4;
-    heap_block->max = (heap_block->max / global_heap.block_size) * global_heap.block_size < heap_block->max ? (heap_block->max / global_heap.block_size) + 1 : heap_block->max / global_heap.block_size;
+    //heap_block->max = (heap_block->max / global_heap.block_size) * global_heap.block_size < heap_block->max ? (heap_block->max / global_heap.block_size) + 1 : heap_block->max / global_heap.block_size;
     heap_block->start = 0;
 
     uint32 *heap = &heap_block[1];
@@ -29,7 +29,6 @@ void *heap_alloc(uint64 size, uint64 alignment, uint32 flags)
     struct heap_block_t *heap_block;
     uint64 ptr;
     uint32 *heap;
-    if(size < global_heap.block_size) size = global_heap.block_size;
     for(heap_block = global_heap.heap; heap_block; heap_block = heap_block->next)
     {
         uint32 *heap = &heap_block[1];
@@ -41,6 +40,7 @@ void *heap_alloc(uint64 size, uint64 alignment, uint32 flags)
                 continue;
             }
             uint64 ptr = i * global_heap.block_size + (uint64)heap + heap_block->max;
+
             if(ptr % alignment != 0)
             {
                 uint64 aligned_ptr = ((ptr + (alignment - 1)) & ~(alignment-1));
@@ -55,13 +55,13 @@ void *heap_alloc(uint64 size, uint64 alignment, uint32 flags)
             }
             uint32 blocks_to_allocate = (size / global_heap.block_size) * global_heap.block_size < size ? (size / global_heap.block_size) + 1 : size / global_heap.block_size;
 
-            if(!(heap[i+(blocks_to_allocate-1)+1] & 1)) heap[i+blocks_to_allocate] = heap[i];
+            if(!(heap[i+blocks_to_allocate] & 1)) heap[i+blocks_to_allocate] = heap[i];
             heap[i] = ((i+blocks_to_allocate-1)<<1) | 1;
 
-            //vmmap(ptr-0xFFFF800000000000, ptr, 3, size);
             return (void*)ptr;
         }
     }
+    printf("FATAL: OUT OF MEMORY\n(alberinfo, please implement a proper handler ffs)\n"); while(1);
     return 0;
 }
 
@@ -70,7 +70,7 @@ void heap_free(void *addr)
     for(struct heap_block_t *heap_block = global_heap.heap; heap_block; heap_block = heap_block->next)
     {
         uint32 *heap = &heap_block[1];
-        if(!(addr >= heap && addr <= (uint64)heap + (heap_block->max/4) * global_heap.block_size)) continue;
+        if(!(addr >= heap && addr <= (uint64)heap + heap_block->size)) continue;
 
         addr = (uint64)addr - (uint64)heap - heap_block->max;
         uint32 startpoint = (uint64)addr / global_heap.block_size;

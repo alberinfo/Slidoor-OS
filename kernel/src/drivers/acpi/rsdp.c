@@ -42,16 +42,23 @@ uint32 *acpiCheckRSDPtr(uint32 *ptr)
    return NULL;
 }
 
-
-
 uint32 *acpiGetRSDPtr(void)
 {
    uint32 *rsdp = NULL;
    acpi_pm_info = kmalloc(sizeof(struct acpi_pm_info_t));
+   
+   //Try using multiboots given rsdp
+   rsdp = ((struct multiboot_tag_acpi*)get_mboot_info(multiboot_tag_TYPE_ACPI_OLD))->rsdp; //It does not really matter if we use type old or type new
+   if(acpiCheckRSDPtr(rsdp) != NULL)
+   {
+      return acpiCheckRSDPtr(rsdp);
+   }
+   
+   //Maybe multiboot is not good enough. Lets try to search it ourselves (and as may be usless as well, but whatever)
    for(uint8 *addr = 0xE0000 + 0xFFFF800000000000; (uint64) addr < 0x100000 + 0xFFFF800000000000; addr++)
    {
       rsdp = acpiCheckRSDPtr(addr);
-      if (rsdp != NULL) return rsdp;
+      if (rsdp != NULL) {printf("lel %x\n", rsdp); return rsdp;}
    }
    printf("[INFO] No RSD PTR found\n");
    return NULL;

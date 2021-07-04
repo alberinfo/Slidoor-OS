@@ -9,10 +9,17 @@
 #include "opcode.h"
 #include "eval.h"
 
+struct AcpiNamespaceBlockChildList_t //FUCK. THAT. NAME. Thanks, i hate it.
+{
+	struct AcpiNamespaceBlockChildList_t *next;
+	uint64 child_ptr;
+} __attribute__ ((packed));
+
 struct AcpiNamespaceBlock_t
 {
 	uint16 child_amount;
-	uint64 *child; //We can have more than one child, and we save a pointer for each one
+	uint64 last_child;
+	struct AcpiNamespaceBlockChildList_t *childs;
 	uint64 *parent;
 	string name; //i.e PCI0
 	string full_name; //i.e _SB_.PCI0
@@ -24,7 +31,7 @@ struct AcpiNamespaceBlock_t
 void AcpiInitNamespace(void); //Create the root.
 
 void *AcpiWalkNamespace(string destination); //Destination is what we're searching. This will return a pointer what we were searching
-void AcpiCreateNamespaceBlock(string parent, struct AcpiNamespaceBlock_t *block); //Self explaining
+void AcpiCreateNamespaceBlock(struct AcpiNamespaceBlock_t *parent, struct AcpiNamespaceBlock_t *block); //Self explaining
 void AcpiDeleteNamespaceBlock(string node); //self explanatory
 
 void AcpiDumpNamespace(void);

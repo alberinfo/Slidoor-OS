@@ -36,6 +36,7 @@ int parseMultiboot(uint64 addr, uint64 kernel_end)
     kernel_end -= 0xFFFF800000000000;
     GetUsableMem(addr, kernel_end);
     mboot_info = kmalloc(sizeof(struct mboot_info_t));
+    memzero(mboot_info, sizeof(struct mboot_info_t));
     struct multiboot_tag *mtag;
     for(mtag = addr+8; mtag->type != multiboot_tag_TYPE_END; mtag = (uint8*)mtag + ((mtag->size + 7) & ~7))
     {
@@ -90,8 +91,10 @@ int parseMultiboot(uint64 addr, uint64 kernel_end)
             case multiboot_tag_TYPE_SMBIOS:
                 break;
             case multiboot_tag_TYPE_ACPI_OLD:
+                mboot_info->mboot_acpi = mtag;
                 break;
             case multiboot_tag_TYPE_ACPI_NEW:
+                mboot_info->mboot_acpi = mtag;
                 break;
             case multiboot_tag_TYPE_NETWORK:
                 break;
@@ -120,6 +123,8 @@ void *get_mboot_info(uint8 type) //Get a ptr to the info
         return (void*)mboot_info->mboot_mmap;
     } else if(type == multiboot_tag_TYPE_FRAMEBUFFER) {
         return (void*)mboot_info->mboot_fb; //Its already a pointer
+    } else if(type == multiboot_tag_TYPE_ACPI_OLD || type == multiboot_tag_TYPE_ACPI_NEW) {
+        return (void*)mboot_info->mboot_acpi;
     }
     return 0;
 }

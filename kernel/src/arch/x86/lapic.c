@@ -203,14 +203,14 @@ void SMP_Start(void) //Start all AP's (if any)
     if(acpi_pm_info->cpus > 1)
     {
         id_vmmap(0x1000, 0x5000, 3);
-        memcpy(0x1000, &_ap_GDT32Pointer, 8);
-        memcpy(0x2000, &_ap_pmode_trampoline, 32);
-        memcpy(0x3000, &_ap_entry, 24); //Put the initialization code at a lower address
+        memcpy_fast(0x1000, &_ap_GDT32Pointer, 8);
+        memcpy_fast(0x2000, &_ap_pmode_trampoline, 32);
+        memcpy_fast(0x3000, &_ap_entry, 24); //Put the initialization code at a lower address
         for(int i = 1; i < acpi_pm_info->cpus; i++)
         {
             if((acpi_pm_info->lapic[i]->flags & 1) == 0) continue;
-            uint64 Stack_Addr = kmalloc(0x1000);
-            memcpy(0x4000, &Stack_Addr, 8);
+            uint64 Stack_Addr = kmalloc(0x20000);
+            memcpy_fast(0x4000, &Stack_Addr, 8);
             APWakeup(acpi_pm_info->lapic[i]->apic_id, 0x3000); //Init AP
         }
     }

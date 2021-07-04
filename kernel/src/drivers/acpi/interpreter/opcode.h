@@ -107,7 +107,7 @@ static inline bool AML_CheckIsName(uint8 *x)
 	int top = 4;
 	for(int i = 0; i < top; i++) //Names are always 4 characters
     {
-        if(x[i] == AML_RootChar || x[i] == AML_ParentPrefixChar) { top++; continue;}
+        if(x[i] == AML_RootChar || x[i] == AML_ParentPrefixChar || x[i] == AML_DualnamePrefix || x[i] == AML_MultinamePrefix) { top++; continue;}
         if(!(AML_IsDigitChar(x[i]) || AML_IsNameChar(x[i]) || x[i] == AML_NameChar)) return false;
     }
 	return true;
@@ -119,11 +119,11 @@ static inline string AML_GetName(uint8 *x)
 	int top = 4, retidx = 0;
 	for(int i = 0; i < top; i++) //Names are always 4 characters
 	{
-		if(x[i] == AML_RootChar || x[i] == AML_ParentPrefixChar) {top++;continue;}
-		if(!(AML_IsDigitChar(x[i]) || AML_IsNameChar(x[i]) || x[i] == AML_RootChar || x[i] == AML_ParentPrefixChar || x[i] == AML_NameChar)) return 0;
+		if(x[i] == AML_RootChar || x[i] == AML_ParentPrefixChar || x[i] == AML_DualnamePrefix || x[i] == AML_MultinamePrefix) { top++; continue;}
+        if(!(AML_IsDigitChar(x[i]) || AML_IsNameChar(x[i]) || x[i] == AML_RootChar || x[i] == AML_ParentPrefixChar || x[i] == AML_NameChar)) return 0;
 		ret[retidx++] = (char)x[i];
 	}
-	ret[4] = '\0';
+	ret[retidx] = '\0';
 	return ret;
 }
 

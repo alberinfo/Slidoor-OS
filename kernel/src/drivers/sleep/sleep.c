@@ -10,7 +10,7 @@ string getUsedTimer()
 void ChangeTimer(string timer)
 {
 	if(TimerUsed == "") TimerUsed = kmalloc(16); 
-	memcpy(TimerUsed, 0, 16);
+	memset(TimerUsed, 0, 16);
     memcpy(TimerUsed, timer, strlen(timer));
 }
 

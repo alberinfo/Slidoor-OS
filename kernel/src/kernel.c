@@ -8,7 +8,6 @@ void kmain()
     asm volatile("mov %%rbx, %0" : "=b" (mboot_addr) : :);
     dosetup(mboot_addr+0xFFFF800000000000, &kernel_end);
     printf("\nBooted with %s\n>", get_mboot_info(multiboot_tag_TYPE_BOOT_LOADER_NAME));
-
     last_str = "";
     end_str = 0;
     while(1)
@@ -88,11 +87,11 @@ void kmain()
                     } else {
                         printf("%s %s device on bus %i\n", ata_devices.devices[number].type, ata_devices.devices[number].slave ? "Slave" : "Master", ata_devices.devices[number].channel);
                         printf("Size:%iMB\n", ata_devices.devices[number].size);
-                        if(!strcmp(ata_devices.devices[number].type, "PATA") || !strcmp(ata_devices.devices[number].type, "SATA"))
+                        if(strEql(ata_devices.devices[number].type, "PATA") || strEql(ata_devices.devices[number].type, "SATA"))
                         {
                             struct ata_identify_t *info = ata_devices.devices[number].IDENTIFY_addr;
                             printf("Serial number: %s\nModel number: %s\nFirmware revision: %s\n", info->SerNum, info->ModNum, info->FirmRev);
-                        } else if(strcmp(ata_devices.devices[number].type, "Unknown")) {
+                        } else if(strEql(ata_devices.devices[number].type, "Unknown") || strEql(ata_devices.devices[number].type, "PATAPI") || strEql(ata_devices.devices[number].type, "SATAPI")) {
                             struct ata_identify_packet_t *info = ata_devices.devices[number].IDENTIFY_addr;
                             printf("Serial number: %s\nModel number: %s\nFirmware revision: %s\n", info->SerNum, info->ModNum, info->FirmRev); 
                         }

@@ -86,7 +86,7 @@ if [ "$EMULATOR" = 0 ]; then
     rm disk.img.lock
     bochs -q -f bochsrc.bxrc
 elif [ "$EMULATOR" = 1 ]; then
-    qemu-system-x86_64 -cpu SandyBridge -cdrom Slidoor.iso -hda disk.img -debugcon stdio -smp 4 -m 128M #-S -s & gdb -w obin/bootloader.o \
+    qemu-system-x86_64 -cpu SandyBridge -cdrom Slidoor.iso -hda disk.img -debugcon stdio -smp 4 -m 32M #-S -s & gdb -w obin/bootloader.o \
 #    -ex 'target remote localhost:1234' \
 #    -ex 'return' \
 #    -ex 'c' \

@@ -87,11 +87,21 @@ void acpiPowerOff(void)
 {
     // SCI_EN is set to 1 if acpi shutdown is possible
     if(acpi_pm_info->SCI_EN == 0) return;
+    struct AcpiNamespaceBlock_t *S5_Node = AcpiWalkNamespace("\\_S5_");
 
-    outportw(acpi_pm_info->facp->PM1aControlBlock, acpi_pm_info->ACPI_S5.SLPYPa | acpi_pm_info->SLP_EN);
+    uint8 *S5_Data = S5_Node->addr+1; //Lets point directly to the info, we already know whats in the packet (hoping its a packet, i think it as School-R-Lea that said it could just as well be a method so...)
+    
+    uint8 *S5_SLPYP = kmalloc(2); //a,b
+    if (*S5_Data == 0x0A) S5_Data++;   // skip byteprefix
+    S5_SLPYP[0] = *S5_Data;
+    S5_Data++;
+    if (*S5_Data == 0x0A) S5_Data++;   // skip byteprefix
+    S5_SLPYP[1] = *S5_Data;
+    // send the shutdown command
+    outportw(acpi_pm_info->facp->PM1aControlBlock, S5_SLPYP[0] << 10 | acpi_pm_info->SLP_EN);
     if(acpi_pm_info->facp->PM1bControlBlock != 0)
     {
-        outportw(acpi_pm_info->facp->PM1bControlBlock, acpi_pm_info->ACPI_S5.SLPYPb | acpi_pm_info->SLP_EN);
+        outportw(acpi_pm_info->facp->PM1bControlBlock, S5_SLPYP[1] << 10 | acpi_pm_info->SLP_EN);
     }
 }
 
