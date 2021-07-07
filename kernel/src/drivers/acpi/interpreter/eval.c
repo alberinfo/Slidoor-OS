@@ -71,7 +71,7 @@ void /*for now void, may be an int*/ AcpiEvalAMLCustomRoot(void *CRoot, uint8 *p
 
             string name = AML_GetName(ptr+PkgLeadByte+1);
             block->name = name;
-            //printf("%s\n", name);
+            
             block->type = AML_MethodOp;
             block->size = *(ptr+1)-1;
             block->addr = ptr+1+PkgLeadByte+4+AML_GetMethodArgCount(ptr)+1; //Base + Op offset + Length offset + Name offset + Argument_count offset + Method Flag offset

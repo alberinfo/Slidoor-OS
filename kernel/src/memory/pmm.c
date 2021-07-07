@@ -17,7 +17,6 @@ void heapAddBlock(uint64 base_addr, uint64 size)
     size -= sizeof(struct heap_block_t);
     heap_block->size = size;
     heap_block->max = size / global_heap.block_size;
-    //heap_block->max = (heap_block->max / global_heap.block_size) * global_heap.block_size < heap_block->max ? (heap_block->max / global_heap.block_size) + 1 : heap_block->max / global_heap.block_size;
     heap_block->start = 0;
 
     uint32 *heap = &heap_block[1];
@@ -28,28 +27,24 @@ void *heap_alloc(uint64 size, uint64 alignment, uint32 flags)
 {
     struct heap_block_t *heap_block;
     uint64 ptr;
-    uint32 *heap;
     for(heap_block = global_heap.heap; heap_block; heap_block = heap_block->next)
     {
         uint32 *heap = &heap_block[1];
-        int prev_i = -1;
         for(int i = heap_block->start; i < heap_block->max;)
         {
             if(heap[i] & 1 || ((heap[i] >> 1)-i +1) * global_heap.block_size < size)
             {
-                prev_i = i;
                 i = (heap[i] >> 1) +1;
                 continue;
             }
             uint64 ptr = i * global_heap.block_size + (uint64)heap + heap_block->max * 4;
 
-            if((double)(ptr % alignment) != 0)
+            if(ptr % alignment != 0)
             {
                 uint64 aligned_ptr = ((ptr + (alignment - 1)) & ~(alignment-1));
                 uint32 difference = aligned_ptr - ptr;
                 if(((heap[i] >> 1)-i +1) * global_heap.block_size < size + difference)
                 {
-                    prev_i = i;
                     i = (heap[i] >> 1) + 1;
                     continue;
                 }
@@ -78,7 +73,7 @@ void heap_free(void *addr)
         addr = (uint64)addr - (uint64)heap - heap_block->max * 4;
         uint32 startpoint = (uint64)addr / global_heap.block_size;
         uint32 endpoint = heap[startpoint] >> 1;
-        heap[startpoint] = ~1;
+        heap[startpoint] &= ~((uint32)1);
         if(endpoint + 1 < heap_block->max)
         {
             if(!(heap[endpoint + 1] & 1))
@@ -99,6 +94,7 @@ void heap_free(void *addr)
     }
     return;
 }
+
 
 void *kmalloc(uint64 size)
 {
