@@ -144,4 +144,16 @@ static inline bool AML_CheckIsPackage(uint8 *ptr)
 	return *ptr == AML_NameOp && AML_CheckIsName(ptr+1) && *(ptr+5) == AML_PackageOp;
 }
 
+static inline bool AML_CheckIsMethod(uint8 *ptr)
+{
+	uint8 PkgLeadByte = (*(ptr+1) >> 6) + 1; //>> 6 to get the last 2 bits
+	return *ptr == AML_MethodOp && AML_CheckIsName(ptr+PkgLeadByte+1);
+}
+
+static inline int AML_GetMethodArgCount(uint8 *ptr)
+{
+	uint8 PkgLeadByte = (*(ptr+1) >> 6) + 1; //>> 6 to get the last 2 bits
+	return (*(ptr+1+PkgLeadByte+4)) & 7; //bits 0-3 represent the amount of arguments for this function
+}
+
 #endif

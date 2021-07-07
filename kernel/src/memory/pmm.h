@@ -26,5 +26,6 @@ void *malloc(uint64 size);
 void *kmalloc_aligned(uint64 size, uint64 alignment);
 void *malloc_aligned(uint64 size, uint64 alignment);
 void free(void *ptr);
+void kill_pmm(void);
 
 #endif

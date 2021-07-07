@@ -17,47 +17,47 @@ fi;
 nasm -f elf64 -w -all boot/bootloader.asm -o kernel/obin/bootloader.o
 nasm -f elf64 -w -all boot/incapableboot.asm -o kernel/obin/incapableboot.o
 "$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/kernel.c -o kernel/obin/kc.o -w -g #nostdlib?
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/grub/multiboot.c -o kernel/obin/multiboot.o -w -g
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/grub/multiboot.c -o kernel/obin/multiboot.o -w -g
 
 nasm -f elf64 -w -all kernel/src/arch/x86/isr.asm -o kernel/obin/israsm.o
 nasm -f elf64 -w -all kernel/src/arch/x86/irq.asm -o kernel/obin/irqasm.o
 nasm -f elf64 -w -all kernel/src/arch/x86/smp.asm -o kernel/obin/smpasm.o
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/setup/setup.c -o kernel/obin/setup.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/setup/setup.c -o kernel/obin/setup.o -w
 "$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/arch/x86/cpu.c -o kernel/obin/cpu.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/drivers/vga/vga.c -o kernel/obin/vga.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/vga/vga.c -o kernel/obin/vga.o -w
 "$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/vesa/vesa.c -o kernel/obin/vesa.o -w
 "$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/console/console.c -o kernel/obin/console.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/drivers/acpi/acpi.c -o kernel/obin/acpi.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/drivers/acpi/madt.c -o kernel/obin/madt.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/drivers/acpi/fadt.c -o kernel/obin/fadt.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/drivers/acpi/dsdt.c -o kernel/obin/dsdt.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/drivers/acpi/rsdt.c -o kernel/obin/rsdt.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/drivers/acpi/rsdp.c -o kernel/obin/rsdp.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/drivers/acpi/interpreter/namespace.c -o kernel/obin/AcpiNamespace.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/drivers/acpi/interpreter/eval.c -o kernel/obin/AcpiEval.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/arch/x86/lapic.c -o kernel/obin/lapic.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/arch/x86/ioapic.c -o kernel/obin/ioapic.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/drivers/energy/energy.c -o kernel/obin/energy.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/string/string.c -o kernel/obin/string.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/arch/x86/smp.c -o kernel/obin/smp.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/drivers/pci/pci.c -o kernel/obin/pci.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/drivers/pcie/pcie.c -o kernel/obin/pcie.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/drivers/kb/kb.c -o kernel/obin/kb.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/arch/x86/idt.c -o kernel/obin/idt.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/arch/x86/isr.c -o kernel/obin/isr.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/arch/x86/irq.c -o kernel/obin/irq.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/memory/paging.c -o kernel/obin/paging.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/memory/pmm.c -o kernel/obin/pmm.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/drivers/rtc/rtc.c -o kernel/obin/rtc.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/drivers/sleep/sleep.c -o kernel/obin/sleep.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/drivers/pit/pit.c -o kernel/obin/pit.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/drivers/hpet/hpet.c -o kernel/obin/hpet.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/drivers/ata/ata.c -o kernel/obin/ata.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/drivers/ata/atapi.c -o kernel/obin/atapi.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/drivers/ata/pio/ata_pio.c -o kernel/obin/ata_pio.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/drivers/ata/pio/atapi_pio.c -o kernel/obin/atapi_pio.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/drivers/ata/dma/ata_dma.c -o kernel/obin/ata_dma.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/drivers/ata/dma/atapi_dma.c -o kernel/obin/atapi_dma.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/acpi/acpi.c -o kernel/obin/acpi.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/acpi/madt.c -o kernel/obin/madt.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/acpi/fadt.c -o kernel/obin/fadt.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/acpi/dsdt.c -o kernel/obin/dsdt.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/acpi/rsdt.c -o kernel/obin/rsdt.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/acpi/rsdp.c -o kernel/obin/rsdp.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/acpi/interpreter/namespace.c -o kernel/obin/AcpiNamespace.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/acpi/interpreter/eval.c -o kernel/obin/AcpiEval.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/arch/x86/lapic.c -o kernel/obin/lapic.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/arch/x86/ioapic.c -o kernel/obin/ioapic.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/energy/energy.c -o kernel/obin/energy.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/string/string.c -o kernel/obin/string.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/arch/x86/smp.c -o kernel/obin/smp.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/pci/pci.c -o kernel/obin/pci.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/pcie/pcie.c -o kernel/obin/pcie.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/kb/kb.c -o kernel/obin/kb.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/arch/x86/idt.c -o kernel/obin/idt.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/arch/x86/isr.c -o kernel/obin/isr.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/arch/x86/irq.c -o kernel/obin/irq.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/memory/paging.c -o kernel/obin/paging.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/memory/pmm.c -o kernel/obin/pmm.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/rtc/rtc.c -o kernel/obin/rtc.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/sleep/sleep.c -o kernel/obin/sleep.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/pit/pit.c -o kernel/obin/pit.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/hpet/hpet.c -o kernel/obin/hpet.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/ata/ata.c -o kernel/obin/ata.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/ata/atapi.c -o kernel/obin/atapi.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/ata/pio/ata_pio.c -o kernel/obin/ata_pio.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/ata/pio/atapi_pio.c -o kernel/obin/atapi_pio.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/ata/dma/ata_dma.c -o kernel/obin/ata_dma.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/ata/dma/atapi_dma.c -o kernel/obin/atapi_dma.o -w
 
 cd kernel/src/console/
 
@@ -86,7 +86,7 @@ if [ "$EMULATOR" = 0 ]; then
     rm disk.img.lock
     bochs -q -f bochsrc.bxrc
 elif [ "$EMULATOR" = 1 ]; then
-    qemu-system-x86_64 -cpu SandyBridge -cdrom Slidoor.iso -hda disk.img -debugcon stdio -smp 4 -m 16M #-S -s & gdb -w obin/bootloader.o \
+    qemu-system-x86_64 -cpu SandyBridge -cdrom Slidoor.iso -hda disk.img -debugcon stdio -smp 64 -m 32M #-S -s & gdb -w obin/bootloader.o \
 #    -ex 'target remote localhost:1234' \
 #    -ex 'return' \
 #    -ex 'c' \

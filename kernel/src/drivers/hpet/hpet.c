@@ -45,13 +45,13 @@ void StartHpet()
 
 void acpiParseHpet(uint32 *ptr)
 {
-	struct HPET *hpet = (struct HPET*)(*ptr + 0xFFFF800000000000);
+	/*struct HPET *hpet = (struct HPET*)(*ptr + 0xFFFF800000000000);
 	HpetAddr = hpet->Address.Address;
 	uint64 *addr = HpetAddr;
 	id_vmmap(addr,2048,3);
 	CounterClockPeriod = HpetReadMMIO(HpetCapabilitiesReg) >> 32;
 	StartHpet(); //Until here, Hpet will start working but no IRQ's will be generated\
-	since no comparator has been set up
+	since no comparator has been set up*/
 }
 
 bool HpetSleeping = false;

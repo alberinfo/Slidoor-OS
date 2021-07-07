@@ -113,11 +113,14 @@ void acpiReboot(void)
         {
         	uint8* resaddr = acpi_pm_info->facp->ResetReg.Address;
         	id_vmmap(resaddr, 1024, 3);
+            kill_pmm();
         	*resaddr = acpi_pm_info->facp->ResetValue;
         } else if(acpi_pm_info->facp->ResetReg.AddressSpace == 1) { //The address is part of the I/O space
-        	outportb(acpi_pm_info->facp->ResetReg.Address, acpi_pm_info->facp->ResetValue);
+        	kill_pmm();
+            outportb(acpi_pm_info->facp->ResetReg.Address, acpi_pm_info->facp->ResetValue);
         } else if(acpi_pm_info->facp->ResetReg.AddressSpace == 2) { //The address is part of the PCI config space
-        	pciWrite8(acpi_pm_info->facp->ResetReg.Address, acpi_pm_info->facp->ResetValue); //NOTE:THIS IS WRONG.\
+        	kill_pmm();
+            pciWrite8(acpi_pm_info->facp->ResetReg.Address, acpi_pm_info->facp->ResetValue); //NOTE:THIS IS WRONG.\
         	we should write to the bus number 0, etc etc.
         }
     }

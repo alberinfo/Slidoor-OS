@@ -4,6 +4,7 @@ void reboot()
 {
     ioapicDisable(); //We may have situations in which the IOAPIC is not set to masked, thus causing faults
     acpiReboot();
+    kill_pmm();
     uint8 check = 0;
     do
     {

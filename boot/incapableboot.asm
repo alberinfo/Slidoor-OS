@@ -1,7 +1,15 @@
 [bits 32]
+
+;extern VGAMode
+
 section .uarch
 global no_lmode
 no_lmode:
+    ;push byte 0
+    ;push dword 80
+    ;push dword 25
+    ;push byte 8
+    ;call VGAMode
     mov dword [0xB8000], 0x0F680F54
     mov dword [0xB8004], 0x0F730F69
     mov dword [0xB8008], 0x0F700F20
@@ -60,6 +68,11 @@ no_lmode:
 
 global no_cpuid
 no_cpuid:
+    ;push byte 0
+    ;push dword 80
+    ;push dword 25
+    ;push byte 8
+    ;call VGAMode
     mov dword [0xB8000], 0x0F546869
     mov dword [0xB8004], 0x0F732070
     mov dword [0xB8008], 0x0F726f63

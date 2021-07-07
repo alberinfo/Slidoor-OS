@@ -48,7 +48,7 @@ void /*for now void, may be an int*/ AcpiEvalAMLCustomRoot(void *CRoot, uint8 *p
             
             ptr += block->size+2;//two bytes for the type
             i += block->size+2;
-        } else if(AML_CheckIsPackage(ptr)) { //This might be the declaration of either a variable or a package (or something else im maybe missing out lol)
+        } else if(AML_CheckIsPackage(ptr)) { //We may have a packet inside this packet. Search / think how to handle it.
         	struct AcpiNamespaceBlock_t *block = kmalloc(sizeof(struct AcpiNamespaceBlock_t));
         	memzero(block, sizeof(struct AcpiNamespaceBlock_t));
 
@@ -63,7 +63,22 @@ void /*for now void, may be an int*/ AcpiEvalAMLCustomRoot(void *CRoot, uint8 *p
         	AcpiCreateNamespaceBlock(current_node, block);
             ptr += block->size+6;//The size of the NameOp
         	i += block->size+6;
-    	}
+    	} else if(AML_CheckIsMethod(ptr)) { //We also need to find a way of executing whats inside this
+            struct AcpiNamespaceBlock_t *block = kmalloc(sizeof(struct AcpiNamespaceBlock_t));
+            memzero(block, sizeof(struct AcpiNamespaceBlock_t));
+
+            uint8 PkgLeadByte = (*(ptr+1) >> 6) + 1;
+
+            string name = AML_GetName(ptr+PkgLeadByte+1);
+            block->name = name;
+            //printf("%s\n", name);
+            block->type = AML_MethodOp;
+            block->size = *(ptr+1)-1;
+            block->addr = ptr+1+PkgLeadByte+4+AML_GetMethodArgCount(ptr)+1; //Base + Op offset + Length offset + Name offset + Argument_count offset + Method Flag offset
+            AcpiCreateNamespaceBlock(current_node, block);
+            ptr += block->size+1;
+            i += block->size+1;
+        }
 	}
 }
 

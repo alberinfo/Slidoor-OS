@@ -448,7 +448,7 @@ void isr14_handler(struct cpu_regs_t cpu_regs)
 {
     ClearScreen();
     uint64 cr2 = 0;
-    asm volatile("mov %%cr2, %0" : "=g" (cr2));
+    asm volatile("movq %%cr2, %%rax\nmovq %%rax, %0" : "=g" (cr2) : : "rax");
     printf("\n\n");
     uint32 ebx = 0, unused = 0;
     cpuid(1, unused, ebx, unused, unused);
