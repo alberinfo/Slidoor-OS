@@ -456,49 +456,41 @@ void init_ata(uint32 busmaster) //soft reset ata bus (ata0 and ata1, but only if
     temporary_dev.ctrl_base = GLOBAL_ATA0_CTRL;
     ata_soft_reset(&temporary_dev);    
 
-    uint8 bus = inportb(GLOBAL_ATA0_CTRL + ALT_STT_REG);
-    outportb(GLOBAL_ATA0_IO + CMD_REG, 0xEA); //Ext cache flush. If a PATA | SATA drive is present, at least bsy bit will be set. If a patapi drive is present, err bit will be set. Otherwise, no drive is present
-    bus = inportb(GLOBAL_ATA0_CTRL + ALT_STT_REG);
+    /*uint8 bus = inportb(GLOBAL_ATA0_CTRL + ALT_STT_REG);
     if(!(bus & 1 << 5) && !(bus & 1 << 2) && !(bus & 1 << 1) && bus)
-    {
+    {*/
         ata_add_drive(GLOBAL_ATA0_IO, GLOBAL_ATA0_CTRL, busmaster, 0, ATA_MASTER);
         ata_identify_type(&ata_devices.devices[ata_devices.dev_amount-1].type, ata_devices.dev_amount-1);
-    }
+    //}
 
-    ata_change_drive(GLOBAL_ATA0_IO, GLOBAL_ATA0_CTRL, ATA_SLAVE);
+    //ata_change_drive(GLOBAL_ATA0_IO, GLOBAL_ATA0_CTRL, ATA_SLAVE);
     
-    bus = inportb(GLOBAL_ATA0_CTRL + ALT_STT_REG);
-    outportb(GLOBAL_ATA0_IO + CMD_REG, 0xEA);
-    bus = inportb(GLOBAL_ATA0_CTRL + ALT_STT_REG);
+    /*bus = inportb(GLOBAL_ATA0_CTRL + ALT_STT_REG);
     if(!(bus & 1 << 5) && !(bus & 1 << 2) && !(bus & 1 << 1) && bus)
-    {
+    {*/
         ata_add_drive(GLOBAL_ATA0_IO, GLOBAL_ATA0_CTRL, busmaster, 0, ATA_SLAVE);
         ata_identify_type(&ata_devices.devices[ata_devices.dev_amount-1].type, ata_devices.dev_amount-1);
-    }
+    //}
     
     temporary_dev.ctrl_base = GLOBAL_ATA1_CTRL;
     ata_soft_reset(&temporary_dev);
 
     
-    bus = inportb(GLOBAL_ATA1_CTRL + ALT_STT_REG);
-    outportb(GLOBAL_ATA1_IO + CMD_REG, 0xEA);
-    bus = inportb(GLOBAL_ATA1_CTRL + ALT_STT_REG);
+    /*bus = inportb(GLOBAL_ATA1_CTRL + ALT_STT_REG);
     if(!(bus & 1 << 5) && !(bus & 1 << 2) && !(bus & 1 << 1) && bus)
-    {
+    {*/
         ata_add_drive(GLOBAL_ATA1_IO, GLOBAL_ATA1_CTRL, busmaster+8, 1, ATA_MASTER);
         ata_identify_type(&ata_devices.devices[ata_devices.dev_amount-1].type, ata_devices.dev_amount-1);
-    }
+    //}
     
-    ata_change_drive(GLOBAL_ATA1_IO, GLOBAL_ATA1_CTRL, ATA_SLAVE);
+    //ata_change_drive(GLOBAL_ATA1_IO, GLOBAL_ATA1_CTRL, ATA_SLAVE);
 
-    bus = inportb(GLOBAL_ATA1_CTRL + ALT_STT_REG);
-    outportb(GLOBAL_ATA1_IO + CMD_REG, 0xEA);
-    bus = inportb(GLOBAL_ATA1_CTRL + ALT_STT_REG);
+    /*bus = inportb(GLOBAL_ATA1_CTRL + ALT_STT_REG);
     if(!(bus & 1 << 5) && !(bus & 1 << 2) && !(bus & 1 << 1) && bus)
-    {
+    {*/
         ata_add_drive(GLOBAL_ATA1_IO, GLOBAL_ATA1_CTRL, busmaster+8, 1, ATA_SLAVE);
         ata_identify_type(&ata_devices.devices[ata_devices.dev_amount-1].type, ata_devices.dev_amount-1);
-    }
+    //}
 
     //ata_devices.devices = kmalloc(ata_devices.dev_amount); //There are (max) two drives per bus
     for(int i = 0; i < ata_devices.dev_amount; i++)
