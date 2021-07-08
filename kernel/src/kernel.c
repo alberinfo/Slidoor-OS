@@ -46,16 +46,16 @@ void kmain()
                     for(uint64 i = 0; i < (uint64)get_mboot_info(23); i++) //Number of maps are returned as the pointer to the variable that contains the amount of maps
                     {
                         multiboot_memory_map_t *mmap = &mmapp[i];
-                        printf("Address: %x Length: %iKB  Type: ", mmap/*[i]*/->addr, mmap/*[i]*/->len / 1024);
-                        if(mmap/*[i]*/->type == MEMORY_AVAILABLE)
+                        printf("Address: %x Length: %iKB  Type: ", mmap->addr, mmap->len / 1024);
+                        if(mmap->type == MEMORY_AVAILABLE)
                         {
                             printcolor("Free", 0, 0x1FFC00);
-                            total_mem += mmap/*[i]*/->len;
-                        } else if(mmap/*[i]*/->type == MEMORY_RESERVED) {
+                            total_mem += mmap->len;
+                        } else if(mmap->type == MEMORY_RESERVED) {
                             printcolor("Reserved", 0, 0xFFFFFC00);
-                        } else if(mmap/*[i]*/->type == MEMORY_ACPI_RECLAIMABLE) {
+                        } else if(mmap->type == MEMORY_ACPI_RECLAIMABLE) {
                             printcolor("ACPI Claimed", 0, 0xFFFFFC00);
-                        } else if(mmap/*[i]*/->type == MEMORY_NVS) {
+                        } else if(mmap->type == MEMORY_NVS) {
                             printcolor("NVS", 0, 0xFFFFFC00);
                         } else {
                             printcolor("Corrupted", 0, 0xFFE00000);
