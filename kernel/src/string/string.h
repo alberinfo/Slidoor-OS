@@ -16,7 +16,7 @@ void *memcpy(void * _dest, void *_src, uint32 _n);
 void* memmove(void* dstptr, const void* srcptr, uint32 uint32);
 void *memset(void *_s, int _c, uint32 _n);
 int memcmp_fast(const void *_s1, const void *_s2, uint32 _n);
-void *memcpy_fast(void *_dest, void *_src, uint32 _n);
+void *memcpy_fast(volatile void *_dest, volatile void *_src, uint32 _n);
 void memzero(void *_src, uint64 _n);
 
 inline void memset_fast(void *_s, uint64 _c, uint32 _n)

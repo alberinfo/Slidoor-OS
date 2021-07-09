@@ -80,7 +80,7 @@ int memcmp_fast(const void *_s1, const void *_s2, uint32 _n)
 	return 0;
 }
 
-void *memcpy_fast(void * _dest, void *_src, uint32 _n)
+void *memcpy_fast(volatile void * _dest, volatile void *_src, uint32 _n)
 {
 	while(_n)
 	{
