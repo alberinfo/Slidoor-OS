@@ -77,19 +77,16 @@ void printchcolor(uint8 c, uint32 fgcolor, uint32 bgcolor)
 	uint32 pixel_offset = CursorPosY * ScreenWidth + CursorPosX;
 	for(int height = 0; height < font->height; height++)
 	{
-		uint32 actual_font = 0;
-		for(int i = 0; i < FontBytesPerLine; i++)
-		{
-			actual_font <<= 8;
-			actual_font |= *(glyph + i);
-		}
-		actual_font >>= (FontBytesPerLine * 8 - font->width);
+		uint64 actual_font = 0;
+		if(font->width <= 8) actual_font = *glyph;
+		else if(font->width <= 16) actual_font = *(uint16*)glyph;
+		else if(font->width <= 32) actual_font = *(uint32*)glyph;
+		else actual_font = *(uint64*)glyph;
+
 		uint32 mask = 1 << (font->width - 1);
-		for(int width = 0; width < font->width; width++)
-		{
-			fb_addr[pixel_offset + width] = actual_font & mask ? fgcolor : bgcolor;
-			mask >>= 1;
-		}
+
+		for(int width = 0; width < font->width; width++, mask >>= 1) fb_addr[pixel_offset + width] = actual_font & mask ? fgcolor : bgcolor;
+
 		pixel_offset += ScreenWidth;
 		glyph += FontBytesPerLine;
 	}

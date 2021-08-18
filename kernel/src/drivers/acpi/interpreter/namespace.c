@@ -106,7 +106,7 @@ void AcpiDeleteNamespaceBlock(string node)
 void Dumpthatacpi(void *root)
 {
 	struct AcpiNamespaceBlock_t *current_node = root;
-	printf("[DUMP] %s, %s, %x\n", current_node->full_name, current_node->name, current_node->type);
+	if(strEql("_INI", current_node->name)) printf("[DUMP] %s, %s, %x\n", current_node->full_name, current_node->name, current_node->type);
 	struct AcpiNamespaceBlockChildList_t *current_childs = current_node->childs;
 	for(int i = 0; i < current_node->child_amount; i++, current_childs = current_childs->next)
 	{

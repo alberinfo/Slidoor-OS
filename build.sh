@@ -22,6 +22,7 @@ nasm -f elf64 -w -all boot/incapableboot.asm -o kernel/obin/incapableboot.o
 nasm -f elf64 -w -all kernel/src/arch/x86/isr.asm -o kernel/obin/israsm.o
 nasm -f elf64 -w -all kernel/src/arch/x86/irq.asm -o kernel/obin/irqasm.o
 nasm -f elf64 -w -all kernel/src/arch/x86/smp.asm -o kernel/obin/smpasm.o
+#"$GCC" -m32 -S multiboot.c -o multibooterr.s -w
 "$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/setup/setup.c -o kernel/obin/setup.o -w
 "$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/arch/x86/cpu.c -o kernel/obin/cpu.o -w
 "$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/vga/vga.c -o kernel/obin/vga.o -w
@@ -83,10 +84,10 @@ cp Slidoor.iso "$WINIMG"
 # run
 read -p "Please, choose your emulator. For Bochs, press 0. For Qemu, press 1. " EMULATOR
 if [ "$EMULATOR" = 0 ]; then
-    rm disk.img.lock
+    rm *.img.lock
     bochs -q -f bochsrc.bxrc
 elif [ "$EMULATOR" = 1 ]; then
-    qemu-system-x86_64 -cpu SandyBridge -cdrom Slidoor.iso -hda disk.img -debugcon stdio -smp 4 -m 32M #-S -s & gdb -w obin/bootloader.o \
+    qemu-system-x86_64 -cpu SandyBridge -cdrom Slidoor.iso -hda disk.img -debugcon stdio -smp 2 -m 32M #-S -s & gdb -w obin/bootloader.o \
 #    -ex 'target remote localhost:1234' \
 #    -ex 'return' \
 #    -ex 'c' \
@@ -99,7 +100,7 @@ fi
 #./"disk dump.sh"
 
 rm -f Slidoor.iso
-rm -f disk.img.lock
+rm -f *.img.lock
 rm -f kern.sym
 rm -f disk.txt
 
