@@ -73,6 +73,7 @@ void printchcolor(uint8 c, uint32 fgcolor, uint32 bgcolor)
 		NewLineCheck();
 		return;
 	}
+	uint32 broadcast_src[font->width]; //I dont know if there's a better name, but basically here we'll store the font, but instead of a bitmap we will store the color for each bit in succession
 	uint8 *glyph = &_binary_Font_psf_start + font->HeaderSize + (c > 0 && c < font->glyphs ? c : 0) * font->BytesPerGlyph;
 	uint32 pixel_offset = CursorPosY * ScreenWidth + CursorPosX;
 	for(int height = 0; height < font->height; height++)
@@ -85,7 +86,13 @@ void printchcolor(uint8 c, uint32 fgcolor, uint32 bgcolor)
 
 		uint32 mask = 1 << (font->width - 1);
 
-		for(int width = 0; width < font->width; width++, mask >>= 1) fb_addr[pixel_offset + width] = actual_font & mask ? fgcolor : bgcolor;
+		for(int width = 0; width < font->width; width++, mask >>= 1) broadcast_src[width] = actual_font & mask ? fgcolor : bgcolor;
+
+		memcpy_fast(fb_addr + pixel_offset, &broadcast_src, font->width * 4); //Font width is multiplied by 4 because we converted each bit in the font to a 32-bit integer
+		//Note: Now i use this "broadcast" method for writing each line, because we're writing less times to the framebuffer.\
+		Before, we would do a 4-byte write for each bit in the bitmap of the character, and then the gfx card would read that and print it on the screen\
+		with what we're doing now, i send all the line in one burst with SSE / Avx instructions, which takes less time. I'd still like to find more optimizations, so this wont be\
+		left alone for a very long time i guess.
 
 		pixel_offset += ScreenWidth;
 		glyph += FontBytesPerLine;
