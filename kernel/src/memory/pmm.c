@@ -68,7 +68,7 @@ void heap_free(void *addr)
     for(struct heap_block_t *heap_block = global_heap.heap; heap_block; heap_block = heap_block->next)
     {
         uint32 *heap = &heap_block[1];
-        if(!(addr > heap && addr < (uint64)heap + heap_block->size)) continue;
+        if(!(addr > heap && addr < (uint64)heap + heap_block->size)) continue; //If the address isnt in the current heap's range, go to the next heap
 
         addr = (uint64)addr - (uint64)heap - heap_block->max * 4;
         uint32 startpoint = (uint64)addr / global_heap.block_size;

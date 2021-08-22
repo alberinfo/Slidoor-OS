@@ -31,6 +31,7 @@ TODO:
 
 - Notes:
 	- The TODO list is not ordered.
+	- when using HPET as the main counter, take in count that bochs finds it pretty difficult to keep a good track of time unless you use sync=both in bochs.bxrc's clock, which is painfully slow btw.
 
 If you wish to contact me add me in discord, my username is "alberinfo_osdev"
 

@@ -217,7 +217,7 @@ void ata48_prepare_command(struct ata_dev_t *ata_device, uint64 lba, uint16 sect
 
 void ata_400ns_delay(struct ata_dev_t *ata_device)
 {
-    sleep(1, SleepMili); //Ye, so what?
+    sleep(1, SleepMili);
     //for(int i = 0; i < 4; i++) inportb(ata_device->ctrl_base + ALT_STT_REG);
 }
 

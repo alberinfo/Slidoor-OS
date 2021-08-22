@@ -11,6 +11,6 @@ void _ap_main()
     *fully_started = true;
     while(1) //In case of an NMI / isr
     {
-        asm("hlt");
+        asm("cli; hlt");
     }
 }

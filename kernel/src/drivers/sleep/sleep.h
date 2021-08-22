@@ -2,9 +2,10 @@
 #define SLEEP_H
 
 #define SleepFemto 0 //Smallest
-#define SleepNano 1
-#define SleepMicro 2
-#define SleepMili 3
+#define SleepPico 1
+#define SleepNano 2
+#define SleepMicro 3
+#define SleepMili 4
 
 #include "../../string/types.h"
 #include "../pit/pit.h"
