@@ -30,10 +30,10 @@ mboot_framebuffer_start:
     dw 5
     dw 1
     dd mboot_framebuffer_end - mboot_framebuffer_start
-    dd 1024
-    dd 768
+    dd 800
+    dd 600
     dd 32
-mboot_framebuffer_end:
+mboot_framebuffer_end: ; in this tag we set a video mode, otherwise the gfxpayload will not work in grub.cfg (note that 800x600 wont be the used mode unless said so by the user)
 
     align 8
 mboot_end_start:

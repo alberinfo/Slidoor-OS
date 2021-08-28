@@ -68,7 +68,7 @@ void acpiParseHpet(uint32 *ptr)
 	uint64 *addr = HpetAddr;
 	id_vmmap(addr,2048,3);
 	CounterClockPeriod = HpetReadMMIO(HpetCapabilitiesReg) >> 32;
-	StartHpet(); //Until here, Hpet will start working but no IRQ's will be generated\
+	//StartHpet(); //Until here, Hpet will start working but no IRQ's will be generated\
 	since no comparator has been set up
 }
 

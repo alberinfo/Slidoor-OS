@@ -168,7 +168,7 @@ void kmain()
             }
             comm = "";
             last_str = "";
-            printf(">");
+            printf("\n>");
         }
     }
 }

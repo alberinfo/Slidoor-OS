@@ -84,9 +84,27 @@ void *memcpy_fast(volatile void * _dest, volatile void *_src, uint32 _n)
 {
 	while(_n)
 	{
-		if(_n >= 1024 && cpu_info.AVX > 2)
+		if(_n >= 1024 && (uint64)_dest % 1024 == 0 && cpu_info.AVX > 2)
 		{
-			asm("mov %0, %%rsi\n"
+			asm("mov %0, %%rsi\n" //Prefetch next possible data access
+				"prefetchnta 1024(%%rsi)\n"
+				"prefetchnta 1088(%%rsi)\n"
+				"prefetchnta 1152(%%rsi)\n"
+				"prefetchnta 1216(%%rsi)\n"
+				"prefetchnta 1280(%%rsi)\n"
+				"prefetchnta 1344(%%rsi)\n"
+				"prefetchnta 1408(%%rsi)\n"
+				"prefetchnta 1472(%%rsi)\n"
+				"prefetchnta 1536(%%rsi)\n"
+				"prefetchnta 1600(%%rsi)\n"
+				"prefetchnta 1664(%%rsi)\n"
+				"prefetchnta 1728(%%rsi)\n"
+				"prefetchnta 1792(%%rsi)\n"
+				"prefetchnta 1856(%%rsi)\n"
+				"prefetchnta 1920(%%rsi)\n"
+				"prefetchnta 1984(%%rsi)\n" : : "g" (_src));
+
+			asm("mov %0, %%rsi\n" //Start moving data around
 				"mov %1, %%rdi\n"
 				"vmovdqu64 (%%rsi), %%zmm0\n"
 				"vmovdqu64 64(%%rsi), %%zmm1\n"
@@ -104,29 +122,47 @@ void *memcpy_fast(volatile void * _dest, volatile void *_src, uint32 _n)
 				"vmovdqu64 832(%%rsi), %%zmm13\n"
 				"vmovdqu64 896(%%rsi), %%zmm14\n"
 				"vmovdqu64 960(%%rsi), %%zmm15\n"
-				"vmovdqu64 %%zmm0, (%%rdi)\n"
-				"vmovdqu64 %%zmm1, 64(%%rdi)\n"
-				"vmovdqu64 %%zmm2, 128(%%rdi)\n"
-				"vmovdqu64 %%zmm3, 192(%%rdi)\n"
-				"vmovdqu64 %%zmm4, 256(%%rdi)\n"
-				"vmovdqu64 %%zmm5, 320(%%rdi)\n"
-				"vmovdqu64 %%zmm6, 384(%%rdi)\n"
-				"vmovdqu64 %%zmm7, 448(%%rdi)\n"
-				"vmovdqu64 %%zmm8, 512(%%rdi)\n"
-				"vmovdqu64 %%zmm9, 576(%%rdi)\n"
-				"vmovdqu64 %%zmm10, 640(%%rdi)\n"
-				"vmovdqu64 %%zmm11, 704(%%rdi)\n"
-				"vmovdqu64 %%zmm12, 768(%%rdi)\n"
-				"vmovdqu64 %%zmm13, 832(%%rdi)\n"
-				"vmovdqu64 %%zmm14, 896(%%rdi)\n"
-				"vmovdqu64 %%zmm15, 960(%%rdi)" : : "g" (_src), "g" (_dest));
+				"vmovntdq %%zmm0, (%%rdi)\n"
+				"vmovntdq %%zmm1, 64(%%rdi)\n"
+				"vmovntdq %%zmm2, 128(%%rdi)\n"
+				"vmovntdq %%zmm3, 192(%%rdi)\n"
+				"vmovntdq %%zmm4, 256(%%rdi)\n"
+				"vmovntdq %%zmm5, 320(%%rdi)\n"
+				"vmovntdq %%zmm6, 384(%%rdi)\n"
+				"vmovntdq %%zmm7, 448(%%rdi)\n"
+				"vmovntdq %%zmm8, 512(%%rdi)\n"
+				"vmovntdq %%zmm9, 576(%%rdi)\n"
+				"vmovntdq %%zmm10, 640(%%rdi)\n"
+				"vmovntdq %%zmm11, 704(%%rdi)\n"
+				"vmovntdq %%zmm12, 768(%%rdi)\n"
+				"vmovntdq %%zmm13, 832(%%rdi)\n"
+				"vmovntdq %%zmm14, 896(%%rdi)\n"
+				"vmovntdq %%zmm15, 960(%%rdi)" : : "g" (_src), "g" (_dest));
 			_dest += 1024;
 			_src += 1024;
 			_n -= 1024;
-		} else if(_n >= 512 && cpu_info.AVX > 1) {
+		} else if(_n >= 512 && (uint64)_dest % 512 == 0 && cpu_info.AVX > 1) {
 			if(cpu_info.AVX == 1 || cpu_info.AVX == 2)
 			{
-				asm("mov %0, %%rsi\n"
+				asm("mov %0, %%rsi\n" //Prefetch next possible data access
+					"prefetchnta 512(%%rsi)\n"
+					"prefetchnta 544(%%rsi)\n"
+					"prefetchnta 576(%%rsi)\n"
+					"prefetchnta 608(%%rsi)\n"
+					"prefetchnta 640(%%rsi)\n"
+					"prefetchnta 672(%%rsi)\n"
+					"prefetchnta 704(%%rsi)\n"
+					"prefetchnta 736(%%rsi)\n"
+					"prefetchnta 768(%%rsi)\n"
+					"prefetchnta 800(%%rsi)\n"
+					"prefetchnta 832(%%rsi)\n"
+					"prefetchnta 864(%%rsi)\n"
+					"prefetchnta 896(%%rsi)\n"
+					"prefetchnta 928(%%rsi)\n"
+					"prefetchnta 960(%%rsi)\n"
+					"prefetchnta 992(%%rsi)\n" : : "g" (_src));
+
+				asm("mov %0, %%rsi\n" //Start moving data around
 					"mov %1, %%rdi\n"
 					"vmovdqu (%%rsi), %%ymm0\n"
 					"vmovdqu 32(%%rsi), %%ymm1\n"
@@ -144,24 +180,34 @@ void *memcpy_fast(volatile void * _dest, volatile void *_src, uint32 _n)
 					"vmovdqu 416(%%rsi), %%ymm13\n"
 					"vmovdqu 448(%%rsi), %%ymm14\n"
 					"vmovdqu 480(%%rsi), %%ymm15\n"
-					"vmovdqu %%ymm0, (%%rdi)\n"
-					"vmovdqu %%ymm1, 32(%%rdi)\n"
-					"vmovdqu %%ymm2, 64(%%rdi)\n"
-					"vmovdqu %%ymm3, 96(%%rdi)\n"
-					"vmovdqu %%ymm4, 128(%%rdi)\n"
-					"vmovdqu %%ymm5, 160(%%rdi)\n"
-					"vmovdqu %%ymm6, 192(%%rdi)\n"
-					"vmovdqu %%ymm7, 224(%%rdi)\n"
-					"vmovdqu %%ymm8, 256(%%rdi)\n"
-					"vmovdqu %%ymm9, 288(%%rdi)\n"
-					"vmovdqu %%ymm10, 320(%%rdi)\n"
-					"vmovdqu %%ymm11, 352(%%rdi)\n"
-					"vmovdqu %%ymm12, 384(%%rdi)\n"
-					"vmovdqu %%ymm13, 416(%%rdi)\n"
-					"vmovdqu %%ymm14, 448(%%rdi)\n"
-					"vmovdqu %%ymm15, 480(%%rdi)" : : "g" (_src), "g" (_dest));
+					"vmovntdq %%ymm0, (%%rdi)\n"
+					"vmovntdq %%ymm1, 32(%%rdi)\n"
+					"vmovntdq %%ymm2, 64(%%rdi)\n"
+					"vmovntdq %%ymm3, 96(%%rdi)\n"
+					"vmovntdq %%ymm4, 128(%%rdi)\n"
+					"vmovntdq %%ymm5, 160(%%rdi)\n"
+					"vmovntdq %%ymm6, 192(%%rdi)\n"
+					"vmovntdq %%ymm7, 224(%%rdi)\n"
+					"vmovntdq %%ymm8, 256(%%rdi)\n"
+					"vmovntdq %%ymm9, 288(%%rdi)\n"
+					"vmovntdq %%ymm10, 320(%%rdi)\n"
+					"vmovntdq %%ymm11, 352(%%rdi)\n"
+					"vmovntdq %%ymm12, 384(%%rdi)\n"
+					"vmovntdq %%ymm13, 416(%%rdi)\n"
+					"vmovntdq %%ymm14, 448(%%rdi)\n"
+					"vmovntdq %%ymm15, 480(%%rdi)" : : "g" (_src), "g" (_dest));
 			} else {
-				asm("mov %0, %%rsi\n"
+				asm("mov %0, %%rsi\n" //Prefetch next possible data access
+					"prefetchnta 512(%%rsi)\n"
+					"prefetchnta 576(%%rsi)\n"
+					"prefetchnta 640(%%rsi)\n"
+					"prefetchnta 704(%%rsi)\n"
+					"prefetchnta 768(%%rsi)\n"
+					"prefetchnta 832(%%rsi)\n"
+					"prefetchnta 896(%%rsi)\n"
+					"prefetchnta 960(%%rsi)\n" : : "g" (_src));
+
+				asm("mov %0, %%rsi\n" //Start moving data around
 					"mov %1, %%rdi\n"
 					"vmovdqu64 (%%rsi), %%zmm0\n"
 					"vmovdqu64 64(%%rsi), %%zmm1\n"
@@ -171,22 +217,40 @@ void *memcpy_fast(volatile void * _dest, volatile void *_src, uint32 _n)
 					"vmovdqu64 320(%%rsi), %%zmm5\n"
 					"vmovdqu64 384(%%rsi), %%zmm6\n"
 					"vmovdqu64 448(%%rsi), %%zmm7\n"
-					"vmovdqu64 %%zmm0, (%%rdi)\n"
-					"vmovdqu64 %%zmm1, 64(%%rdi)\n"
-					"vmovdqu64 %%zmm2, 128(%%rdi)\n"
-					"vmovdqu64 %%zmm3, 192(%%rdi)\n"
-					"vmovdqu64 %%zmm4, 256(%%rdi)\n"
-					"vmovdqu64 %%zmm5, 320(%%rdi)\n"
-					"vmovdqu64 %%zmm6, 384(%%rdi)\n"
-					"vmovdqu64 %%zmm7, 448(%%rdi)" : : "g" (_src), "g" (_dest));
+					"vmovntdq %%zmm0, (%%rdi)\n"
+					"vmovntdq %%zmm1, 64(%%rdi)\n"
+					"vmovntdq %%zmm2, 128(%%rdi)\n"
+					"vmovntdq %%zmm3, 192(%%rdi)\n"
+					"vmovntdq %%zmm4, 256(%%rdi)\n"
+					"vmovntdq %%zmm5, 320(%%rdi)\n"
+					"vmovntdq %%zmm6, 384(%%rdi)\n"
+					"vmovntdq %%zmm7, 448(%%rdi)" : : "g" (_src), "g" (_dest));
 			}
 			_dest += 512;
 			_src += 512;
 			_n -= 512;
-		} else if(_n >= 256) {
+		} else if(_n >= 256 && (uint64)_dest % 256 == 0) {
 			if(cpu_info.AVX == 0)
 			{
-				asm("mov %0, %%rsi\n"
+				asm("mov %0, %%rsi\n" //Prefetch next possible data access
+					"prefetchnta 256(%%rsi)\n"
+					"prefetchnta 272(%%rsi)\n"
+					"prefetchnta 288(%%rsi)\n"
+					"prefetchnta 304(%%rsi)\n"
+					"prefetchnta 320(%%rsi)\n"
+					"prefetchnta 336(%%rsi)\n"
+					"prefetchnta 352(%%rsi)\n"
+					"prefetchnta 368(%%rsi)\n"
+					"prefetchnta 384(%%rsi)\n"
+					"prefetchnta 400(%%rsi)\n"
+					"prefetchnta 416(%%rsi)\n"
+					"prefetchnta 432(%%rsi)\n"
+					"prefetchnta 448(%%rsi)\n"
+					"prefetchnta 464(%%rsi)\n"
+					"prefetchnta 480(%%rsi)\n"
+					"prefetchnta 496(%%rsi)\n" : : "g" (_src));
+
+				asm("mov %0, %%rsi\n" //Start moving data around
 					"mov %1, %%rdi\n"
 					"movdqu (%%rsi), %%xmm0\n"
 					"movdqu 16(%%rsi), %%xmm1\n"
@@ -204,24 +268,34 @@ void *memcpy_fast(volatile void * _dest, volatile void *_src, uint32 _n)
 					"movdqu 208(%%rsi), %%xmm13\n"
 					"movdqu 224(%%rsi), %%xmm14\n"
 					"movdqu 240(%%rsi), %%xmm15\n"
-					"movdqu %%xmm0, (%%rdi)\n"
-					"movdqu %%xmm1, 16(%%rdi)\n"
-					"movdqu %%xmm2, 32(%%rdi)\n"
-					"movdqu %%xmm3, 48(%%rdi)\n"
-					"movdqu %%xmm4, 64(%%rdi)\n"
-					"movdqu %%xmm5, 80(%%rdi)\n"
-					"movdqu %%xmm6, 96(%%rdi)\n"
-					"movdqu %%xmm7, 112(%%rdi)\n"
-					"movdqu %%xmm8, 128(%%rdi)\n"
-					"movdqu %%xmm9, 144(%%rdi)\n"
-					"movdqu %%xmm10, 160(%%rdi)\n"
-					"movdqu %%xmm11, 176(%%rdi)\n"
-					"movdqu %%xmm12, 192(%%rdi)\n"
-					"movdqu %%xmm13, 208(%%rdi)\n"
-					"movdqu %%xmm14, 224(%%rdi)\n"
-					"movdqu %%xmm15, 240(%%rdi)" : : "g" (_src), "g" (_dest));
+					"movntdq %%xmm0, (%%rdi)\n"
+					"movntdq %%xmm1, 16(%%rdi)\n"
+					"movntdq %%xmm2, 32(%%rdi)\n"
+					"movntdq %%xmm3, 48(%%rdi)\n"
+					"movntdq %%xmm4, 64(%%rdi)\n"
+					"movntdq %%xmm5, 80(%%rdi)\n"
+					"movntdq %%xmm6, 96(%%rdi)\n"
+					"movntdq %%xmm7, 112(%%rdi)\n"
+					"movntdq %%xmm8, 128(%%rdi)\n"
+					"movntdq %%xmm9, 144(%%rdi)\n"
+					"movntdq %%xmm10, 160(%%rdi)\n"
+					"movntdq %%xmm11, 176(%%rdi)\n"
+					"movntdq %%xmm12, 192(%%rdi)\n"
+					"movntdq %%xmm13, 208(%%rdi)\n"
+					"movntdq %%xmm14, 224(%%rdi)\n"
+					"movntdq %%xmm15, 240(%%rdi)" : : "g" (_src), "g" (_dest));
 			} else if(cpu_info.AVX == 1 || cpu_info.AVX == 2) {
-				asm("mov %0, %%rsi\n"
+				asm("mov %0, %%rsi\n" //Prefetch next possible data access
+					"prefetchnta 256(%%rsi)\n"
+					"prefetchnta 288(%%rsi)\n"
+					"prefetchnta 320(%%rsi)\n"
+					"prefetchnta 352(%%rsi)\n"
+					"prefetchnta 384(%%rsi)\n"
+					"prefetchnta 416(%%rsi)\n"
+					"prefetchnta 448(%%rsi)\n"
+					"prefetchnta 480(%%rsi)\n" : : "g" (_src));
+
+				asm("mov %0, %%rsi\n" //Start moving data around
 					"mov %1, %%rdi\n"
 					"vmovdqu (%%rsi), %%ymm0\n"
 					"vmovdqu 32(%%rsi), %%ymm1\n"
@@ -231,33 +305,49 @@ void *memcpy_fast(volatile void * _dest, volatile void *_src, uint32 _n)
 					"vmovdqu 160(%%rsi), %%ymm5\n"
 					"vmovdqu 192(%%rsi), %%ymm6\n"
 					"vmovdqu 224(%%rsi), %%ymm7\n"
-					"vmovdqu %%ymm0, (%%rdi)\n"
-					"vmovdqu %%ymm1, 32(%%rdi)\n"
-					"vmovdqu %%ymm2, 64(%%rdi)\n"
-					"vmovdqu %%ymm3, 96(%%rdi)\n"
-					"vmovdqu %%ymm4, 128(%%rdi)\n"
-					"vmovdqu %%ymm5, 160(%%rdi)\n"
-					"vmovdqu %%ymm6, 192(%%rdi)\n"
-					"vmovdqu %%ymm7, 224(%%rdi)" : : "g" (_src), "g" (_dest));
+					"vmovntdq %%ymm0, (%%rdi)\n"
+					"vmovntdq %%ymm1, 32(%%rdi)\n"
+					"vmovntdq %%ymm2, 64(%%rdi)\n"
+					"vmovntdq %%ymm3, 96(%%rdi)\n"
+					"vmovntdq %%ymm4, 128(%%rdi)\n"
+					"vmovntdq %%ymm5, 160(%%rdi)\n"
+					"vmovntdq %%ymm6, 192(%%rdi)\n"
+					"vmovntdq %%ymm7, 224(%%rdi)" : : "g" (_src), "g" (_dest));
 			} else if(cpu_info.AVX == 3) {
-				asm("mov %0, %%rsi\n"
+				asm("mov %0, %%rsi\n" //Prefetch next possible data access
+					"prefetchnta 256(%%rsi)\n"
+					"prefetchnta 320(%%rsi)\n"
+					"prefetchnta 384(%%rsi)\n"
+					"prefetchnta 448(%%rsi)\n" : : "g" (_src));
+
+				asm("mov %0, %%rsi\n" //Start moving data around
 					"mov %1, %%rdi\n"
 					"vmovdqu64 (%%rsi), %%zmm0\n"
 					"vmovdqu64 64(%%rsi), %%zmm1\n"
 					"vmovdqu64 128(%%rsi), %%zmm2\n"
 					"vmovdqu64 192(%%rsi), %%zmm3\n"
-					"vmovdqu64 %%zmm0, (%%rdi)\n"
-					"vmovdqu64 %%zmm1, 64(%%rdi)\n"
-					"vmovdqu64 %%zmm2, 128(%%rdi)\n"
-					"vmovdqu64 %%zmm3, 192(%%rdi)" : : "g" (_src), "g" (_dest));
+					"vmovntdq %%zmm0, (%%rdi)\n"
+					"vmovntdq %%zmm1, 64(%%rdi)\n"
+					"vmovntdq %%zmm2, 128(%%rdi)\n"
+					"vmovntdq %%zmm3, 192(%%rdi)" : : "g" (_src), "g" (_dest));
 			}
 			_dest += 256;
 			_src += 256;
 			_n -= 256;
-		} else if(_n >= 128) {
+		} else if(_n >= 128 && (uint64)_dest % 128 == 0) {
 			if(cpu_info.AVX == 0)
 			{
-				asm("mov %0, %%rsi\n"
+				asm("mov %0, %%rsi\n" //Prefetch next possible data access
+					"prefetchnta 128(%%rsi)\n"
+					"prefetchnta 144(%%rsi)\n"
+					"prefetchnta 160(%%rsi)\n"
+					"prefetchnta 176(%%rsi)\n"
+					"prefetchnta 192(%%rsi)\n"
+					"prefetchnta 208(%%rsi)\n"
+					"prefetchnta 224(%%rsi)\n"
+					"prefetchnta 240(%%rsi)\n" : : "g" (_src));
+
+				asm("mov %0, %%rsi\n" //Start moving data around
 					"mov %1, %%rdi\n"
 					"movdqu (%%rsi), %%xmm0\n"
 					"movdqu 16(%%rsi), %%xmm1\n"
@@ -267,110 +357,143 @@ void *memcpy_fast(volatile void * _dest, volatile void *_src, uint32 _n)
 					"movdqu 80(%%rsi), %%xmm5\n"
 					"movdqu 96(%%rsi), %%xmm6\n"
 					"movdqu 112(%%rsi), %%xmm7\n"
-					"movdqu %%xmm0, (%%rdi)\n"
-					"movdqu %%xmm1, 16(%%rdi)\n"
-					"movdqu %%xmm2, 32(%%rdi)\n"
-					"movdqu %%xmm3, 48(%%rdi)\n"
-					"movdqu %%xmm4, 64(%%rdi)\n"
-					"movdqu %%xmm5, 80(%%rdi)\n"
-					"movdqu %%xmm6, 96(%%rdi)\n"
-					"movdqu %%xmm7, 112(%%rdi)" : : "g" (_src), "g" (_dest));
+					"movntdq %%xmm0, (%%rdi)\n"
+					"movntdq %%xmm1, 16(%%rdi)\n"
+					"movntdq %%xmm2, 32(%%rdi)\n"
+					"movntdq %%xmm3, 48(%%rdi)\n"
+					"movntdq %%xmm4, 64(%%rdi)\n"
+					"movntdq %%xmm5, 80(%%rdi)\n"
+					"movntdq %%xmm6, 96(%%rdi)\n"
+					"movntdq %%xmm7, 112(%%rdi)" : : "g" (_src), "g" (_dest));
 			} else if(cpu_info.AVX == 1 || cpu_info.AVX == 2) {
-				asm("mov %0, %%rsi\n"
+				asm("mov %0, %%rsi\n" //Prefetch next possible data access
+					"prefetchnta 128(%%rsi)\n"
+					"prefetchnta 160(%%rsi)\n"
+					"prefetchnta 192(%%rsi)\n"
+					"prefetchnta 224(%%rsi)\n" : : "g" (_src));
+
+				asm("mov %0, %%rsi\n" //Start moving data around
 					"mov %1, %%rdi\n"
 					"vmovdqu (%%rsi), %%ymm0\n"
 					"vmovdqu 32(%%rsi), %%ymm1\n"
 					"vmovdqu 64(%%rsi), %%ymm2\n"
 					"vmovdqu 96(%%rsi), %%ymm3\n"
-					"vmovdqu %%ymm0, (%%rdi)\n"
-					"vmovdqu %%ymm1, 32(%%rdi)\n"
-					"vmovdqu %%ymm2, 64(%%rdi)\n"
-					"vmovdqu %%ymm3, 96(%%rdi)" : : "g" (_src), "g" (_dest));
+					"vmovntdq %%ymm0, (%%rdi)\n"
+					"vmovntdq %%ymm1, 32(%%rdi)\n"
+					"vmovntdq %%ymm2, 64(%%rdi)\n"
+					"vmovntdq %%ymm3, 96(%%rdi)" : : "g" (_src), "g" (_dest));
 			} else {
-				asm("mov %0, %%rsi\n"
+				asm("mov %0, %%rsi\n" //Prefetch next possible data access
+					"prefetchnta 128(%%rsi)\n"
+					"prefetchnta 192(%%rsi)\n" : : "g" (_src));
+
+				asm("mov %0, %%rsi\n" //Start moving data around
 					"mov %1, %%rdi\n"
 					"vmovdqu64 (%%rsi), %%zmm0\n"
 					"vmovdqu64 64(%%rsi), %%zmm1\n"
-					"vmovdqu64 %%zmm0, (%%rdi)\n"
-					"vmovdqu64 %%zmm1, 64(%%rdi)" : : "g" (_src), "g" (_dest));
+					"vmovntdq %%zmm0, (%%rdi)\n"
+					"vmovntdq %%zmm1, 64(%%rdi)" : : "g" (_src), "g" (_dest));
 			}
 			_dest += 128;
 			_src += 128;
 			_n -= 128;
-		} else if(_n >= 64) {
+		} else if(_n >= 64 && (uint64)_dest % 64 == 0) {
 			if(cpu_info.AVX == 0)
 			{
-				asm("mov %0, %%rsi\n"
+				asm("mov %0, %%rsi\n" //Prefetch next possible data access
+					"prefetchnta 64(%%rsi)\n"
+					"prefetchnta 80(%%rsi)\n"
+					"prefetchnta 96(%%rsi)\n"
+					"prefetchnta 112(%%rsi)\n" : : "g" (_src));
+
+				asm("mov %0, %%rsi\n" //Start moving data around
 					"mov %1, %%rdi\n"
 					"movdqu (%%rsi), %%xmm0\n"
 					"movdqu 16(%%rsi), %%xmm1\n"
 					"movdqu 32(%%rsi), %%xmm2\n"
 					"movdqu 48(%%rsi), %%xmm3\n"
-					"movdqu %%xmm0, (%%rdi)\n"
-					"movdqu %%xmm1, 16(%%rdi)\n"
-					"movdqu %%xmm2, 32(%%rdi)\n"
-					"movdqu %%xmm3, 48(%%rdi)" : : "g" (_src), "g" (_dest));
+					"movntdq %%xmm0, (%%rdi)\n"
+					"movntdq %%xmm1, 16(%%rdi)\n"
+					"movntdq %%xmm2, 32(%%rdi)\n"
+					"movntdq %%xmm3, 48(%%rdi)" : : "g" (_src), "g" (_dest));
 			} else if(cpu_info.AVX == 1 || cpu_info.AVX == 2) {
-				asm("mov %0, %%rsi\n"
+				asm("mov %0, %%rsi\n" //Prefetch next possible data access
+					"prefetchnta 64(%%rsi)\n"
+					"prefetchnta 96(%%rsi)\n" : : "g" (_src));
+
+				asm("mov %0, %%rsi\n" //Start moving data around
 					"mov %1, %%rdi\n"
 					"vmovdqu (%%rsi), %%ymm0\n"
 					"vmovdqu 32(%%rsi), %%ymm1\n"
-					"vmovdqu %%ymm0, (%%rdi)\n"
-					"vmovdqu %%ymm1, 32(%%rdi)" : : "g" (_src), "g" (_dest));
+					"vmovntdq %%ymm0, (%%rdi)\n"
+					"vmovntdq %%ymm1, 32(%%rdi)" : : "g" (_src), "g" (_dest));
 			} else {
-				asm("mov %0, %%rsi\n"
+				asm("mov %0, %%rsi\n" //Prefetch next possible data access
+					"prefetchnta 64(%%rsi)\n": : "g" (_src));
+
+				asm("mov %0, %%rsi\n" //Start moving data around
 					"mov %1, %%rdi\n"
 					"vmovdqu64 (%%rsi), %%zmm0\n"
-					"vmovdqu64 %%zmm0, (%%rdi)" : : "g" (_src), "g" (_dest));
+					"vmovntdq %%zmm0, (%%rdi)" : : "g" (_src), "g" (_dest));
 			}
 			_dest += 64;
 			_src += 64;
 			_n -= 64;
-		} else if(_n >= 32) {
+		} else if(_n >= 32 && (uint64)_dest % 32 == 0) {
 			if(cpu_info.AVX == 0)
 			{
-				asm("mov %0, %%rsi\n"
+				asm("mov %0, %%rsi\n" //Prefetch next possible data access
+					"prefetchnta 32(%%rsi)\n"
+					"prefetchnta 48(%%rsi)\n" : : "g" (_src));
+
+				asm("mov %0, %%rsi\n" //Start moving data around
 					"mov %1, %%rdi\n"
 					"movdqu (%%rsi), %%xmm0\n"
 					"movdqu 16(%%rsi), %%xmm1\n"
-					"movdqu %%xmm0, (%%rdi)\n"
-					"movdqu %%xmm1, 16(%%rdi)" : : "g" (_src), "g" (_dest));
+					"movntdq %%xmm0, (%%rdi)\n"
+					"movntdq %%xmm1, 16(%%rdi)" : : "g" (_src), "g" (_dest));
 			} else {
-				asm("mov %0, %%rsi\n"
+				asm("mov %0, %%rsi\n" //Prefetch next possible data access
+					"prefetchnta 32(%%rsi)\n" : : "g" (_src));
+
+				asm("mov %0, %%rsi\n" //Start moving data around
 					"mov %1, %%rdi\n"
 					"vmovdqu (%%rsi), %%ymm0\n"
-					"vmovdqu %%ymm0, (%%rdi)" : : "g" (_src), "g" (_dest));
+					"vmovntdq %%ymm0, (%%rdi)" : : "g" (_src), "g" (_dest));
 			}
 			_dest += 32;
 			_src += 32;
 			_n -= 32;
-		} else if(_n >= 16) {
+		} else if(_n >= 16 && (uint64)_dest % 16 == 0) {
+			asm("mov %0, %%rsi\n" //Prefetch next possible data access
+				"prefetchnta 16(%%rsi)\n" : : "g" (_src));
+
 			if(cpu_info.AVX == 0)
 			{
-				asm("mov %0, %%rsi\n"
+				asm("mov %0, %%rsi\n" //Start moving data around
 					"mov %1, %%rdi\n"
 					"movdqu (%%rsi), %%xmm0\n"
-					"movdqu %%xmm0, (%%rdi)" : : "g" (_src), "g" (_dest));
+					"movntdq %%xmm0, (%%rdi)" : : "g" (_src), "g" (_dest));
 			} else {
-				asm("mov %0, %%rsi\n"
-					"mov %1, %%rdi\n"
+				asm("mov %0, %%rsi\n" //Start moving data around
+					"mov %1, %%rdi\n" 
 					"vmovdqu (%%rsi), %%xmm0\n"
-					"vmovdqu %%xmm0, (%%rdi)" : : "g" (_src), "g" (_dest));
+					"vmovntdq %%xmm0, (%%rdi)" : : "g" (_src), "g" (_dest));
 			}
 			_dest += 16;
 			_src += 16;
 			_n -= 16;
-		} else if(_n >= 8) {
+		} else if(_n >= 8 && (uint64)_dest % 8 == 0) {
 			*(uint64*)_dest = *(uint64*)_src;
 			_dest += 8;
 			_src += 8;
 			_n -= 8;
-		} else if(_n >= 4) {
+		} else if(_n >= 4 && (uint64)_dest % 4 == 0) {
 			*(uint32*)_dest = *(uint32*)_src;
 			_dest += 4;
 			_src += 4;
 			_n -= 4;
-		} else if(_n >= 2) {
+		} else if(_n >= 2 && (uint64)_dest % 2 == 0) {
 			*(uint16*)_dest = *(uint16*)_src;
 			_dest += 2;
 			_src += 2;
@@ -389,21 +512,24 @@ void memzero(void *_src, uint64 _n)
 	else if(cpu_info.AVX == 1) asm("vpxor %xmm0, %xmm0, %xmm0");
 	else if(cpu_info.AVX == 2) asm("vpxor %ymm0, %ymm0, %ymm0");
 	else asm("vpxorq %zmm0, %zmm0, %zmm0");
+	asm("mov %0, %%rdi" : : "g" (_src));
 	while(_n)
 	{
-		asm("mov %0, %%rdi" : : "g" (_src));
 		if(_n >= 64 && cpu_info.AVX > 2)
 		{
 			asm("vmovdqu64 %zmm0, (%rdi)");
+			asm("add $64, %rdi");
 			_src += 64;
 			_n -= 64;
 		} else if(_n >= 32 && cpu_info.AVX > 1) {
 			asm("vmovdqu %ymm0, (%rdi)");
+			asm("add $32, %rdi");
 			_src += 32;
 			_n -= 32;
 		} else if(_n >= 16) {
 			if(cpu_info.AVX) asm("vmovdqu %xmm0, (%rdi)");
 			else asm("movdqu %xmm0, (%rdi)");
+			asm("add $16, %rdi");
 			_src += 16;
 			_n -= 16;
 		} else if (_n >= 8) {

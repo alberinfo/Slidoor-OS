@@ -81,8 +81,8 @@ void printchcolor(uint8 c, uint32 fgcolor, uint32 bgcolor)
 		uint64 actual_font = 0;
 		if(font->width <= 8) actual_font = *glyph;
 		else if(font->width <= 16) actual_font = *(uint16*)glyph;
-		else if(font->width <= 32) actual_font = *(uint32*)glyph;
-		else actual_font = *(uint64*)glyph;
+		else if(font->width <= 32) actual_font = *(uint32*)glyph; //Unlikely.
+		else actual_font = *(uint64*)glyph; //unlikely, to say the least.
 
 		uint32 mask = 1 << (font->width - 1);
 
@@ -144,6 +144,8 @@ void printf(string str, ...)
             	string str = base_convert(va_arg(args, uint64), 2);
                 print(str);
                 free(str);
+            } else if(str[i] == '%') {
+            	print('%'); //Good lord, it prints something i cant even recognize. just why.
             }
         } else {
             printch(str[i]);
