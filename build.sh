@@ -25,7 +25,6 @@ nasm -f elf64 -w -all kernel/src/arch/x86/smp.asm -o kernel/obin/smpasm.o
 #"$GCC" -m32 -S multiboot.c -o multibooterr.s -w
 "$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/setup/setup.c -o kernel/obin/setup.o -w
 "$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c kernel/src/arch/x86/cpu.c -o kernel/obin/cpu.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/vga/vga.c -o kernel/obin/vga.o -w
 "$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/vesa/vesa.c -o kernel/obin/vesa.o -w
 "$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/console/console.c -o kernel/obin/console.o -w
 "$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/acpi/acpi.c -o kernel/obin/acpi.o -w
@@ -68,7 +67,7 @@ objcopy -O elf64-x86-64 -B i386 -I binary "Font.psf" ../../obin/font.o
 # link
 cd ../../obin/
 
-"../../$LD" -N --output=bootloader.bin --script=../../link.ld bootloader.o incapableboot.o kc.o multiboot.o setup.o vga.o vesa.o console.o string.o smpasm.o smp.o idt.o israsm.o isr.o irqasm.o irq.o kb.o acpi.o AcpiNamespace.o AcpiEval.o madt.o fadt.o dsdt.o rsdt.o rsdp.o lapic.o ioapic.o energy.o cpu.o pci.o pcie.o rtc.o paging.o pmm.o sleep.o pit.o hpet.o ata.o atapi.o ata_pio.o atapi_pio.o ata_dma.o atapi_dma.o font.o
+"../../$LD" -N --output=bootloader.bin --script=../../link.ld bootloader.o incapableboot.o kc.o multiboot.o setup.o vesa.o console.o string.o smpasm.o smp.o idt.o israsm.o isr.o irqasm.o irq.o kb.o acpi.o AcpiNamespace.o AcpiEval.o madt.o fadt.o dsdt.o rsdt.o rsdp.o lapic.o ioapic.o energy.o cpu.o pci.o pcie.o rtc.o paging.o pmm.o sleep.o pit.o hpet.o ata.o atapi.o ata_pio.o atapi_pio.o ata_dma.o atapi_dma.o font.o
 
 cp bootloader.bin ../../Slidoor/boot/
 cd ../../

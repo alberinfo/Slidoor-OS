@@ -20,6 +20,7 @@ mboot_inforeq_start:
     dd mboot_inforeq_end - mboot_inforeq_start
     dd 2 ;Boot loader name
     dd 6 ;Memory map
+    dd 7 ;Vbe info
     dd 8 ;Framebuffer info
     dd 14 ;Acpi 1.0 Rsdp info
     dd 15 ;Acpi 2.0+ Rsdp info

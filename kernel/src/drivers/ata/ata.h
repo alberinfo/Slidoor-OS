@@ -246,8 +246,8 @@ struct ata_queue_element_t
     uint16 *buffer;
     uint64 lba;
     uint16 sectors; //Amount of sectors (will be normally set to one)
-    uint8 write : 1; //0 = read, 1 = write
-    uint8 ATAPI : 1; //0 = ATA, 1 = ATAPI
+    uint8 write; //0 = read, 1 = write
+    uint8 ATAPI; //0 = ATA, 1 = ATAPI
     uint8 *completed; //Basically, set to one when command is completed. Set to zero otherwise
 } __attribute__((packed));
 

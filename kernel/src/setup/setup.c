@@ -7,7 +7,7 @@ void dosetup(uint64 mboot_addr, uint64 kernel_end)
     SetIrq();
     SetLapicSpuriousIrq();
     idtInit();
-    heapInit(32);
+    heapInit(16);
     parseMultiboot(mboot_addr, kernel_end);
     VesaInit();
     ConsoleInit();

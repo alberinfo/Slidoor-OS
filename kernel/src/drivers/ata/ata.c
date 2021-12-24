@@ -244,13 +244,17 @@ int ata_identify_type(struct ata_dev_t *ata_device, int drive_num)
     uint16 signature = inportb(ata_device->io_base + LBA_MID) | (inportb(ata_device->io_base + LBA_HI) << 8);
     if(signature == 0xEB14)
     {
-        ata_device->type = "PATAPI";
+        ata_device->type = kmalloc(6); //6 chars
+        strcpy(ata_device->type, "PATAPI");
     } else if(signature == 0x9669) {
-        ata_device->type = "SATAPI";
+        ata_device->type = kmalloc(6); //6 chars
+        strcpy(ata_device->type, "SATAPI");
     } else if(signature == 0) {
-        ata_device->type = "PATA";
+        ata_device->type = kmalloc(4); //4 chars
+        strcpy(ata_device->type, "PATA");
     } else if(signature == 0xC33C) {
-        ata_device->type = "SATA";
+        ata_device->type = kmalloc(4); //4 chars
+        strcpy(ata_device->type, "SATA");
     } else {
         ata_delete_drive(drive_num);
         return -1; //Device does not exist or is non-ata
@@ -503,7 +507,7 @@ void init_ata(uint32 busmaster) //soft reset ata bus (ata0 and ata1, but only if
 
 void ata_read(struct ata_dev_t *ata_device, uint64 lba, uint16 sectors, uint16 *buffer, uint8 *completion_addr)
 {
-    int ATAPI = 0; //Is this an atapi device?
+    uint8 ATAPI = 0; //Is this an atapi device?
     if(strcmp(ata_device->type, "PATAPI") == 0 || strcmp(ata_device->type, "SATAPI") == 0) ATAPI = 1;
     ata_queue_add(ata_device, lba,sectors, 0, ATAPI, buffer, completion_addr);
     ata_execute_queue(); //If we did not execute any of the ata requests, then theres either a command in progress or the device is not ready
@@ -512,7 +516,7 @@ void ata_read(struct ata_dev_t *ata_device, uint64 lba, uint16 sectors, uint16 *
 
 void ata_write(struct ata_dev_t *ata_device, uint64 lba, uint16 sectors, uint16 *buffer, uint8 *completion_addr)
 {
-    int ATAPI = 0; //Is this an atapi device?
+    uint8 ATAPI = 0; //Is this an atapi device?
     if(strcmp(ata_device->type, "PATAPI") == 0 || strcmp(ata_device->type, "SATAPI") == 0) ATAPI = 1;
     //Here we'll copy the contents of the buffer, in order to save it from modifications before writing.
     uint16 *actual_buffer = 0;

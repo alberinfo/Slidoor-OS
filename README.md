@@ -9,8 +9,6 @@ it features:
 - [x] PCI Bus scanning and parsing
 - [x] PCIe scanning
 - [x] VBE Framebuffer Driver
-- [x] VGA Framebuffer Driver (very likely to get removed)
-- [x] Font parser and renderer
 - [x] Graphical console
 - [x] Support for SSEx, AVX, AVX2, AVX512
 
@@ -35,7 +33,7 @@ TODO:
 
 If you wish to contact me add me in discord, my username is "alberinfo_osdev"
 
-*This by now has my highest priority. Though, seems like a long update, and if done it will be one of the most (if not the most) important update ever done on my os. Also, i wont be porting ACPICA (seems kind of like a mess to me), but instead will try writing an interpreter for myself (while lying an eye on LAI, seems pretty clean)
+* This by now has my highest priority. Though, seems like a long update, and if done it will be one of the most (if not the most) important update ever done on my os. Also, i wont be porting ACPICA (seems kind of like a mess to me), but instead will try writing an interpreter for myself (while lying an eye on LAI, seems pretty clean)
 
 **Updates on the AML Interpreter: As of now, the parser has been done in a good portion, with the only remaining things being:
 	- Packets inside packets, etc

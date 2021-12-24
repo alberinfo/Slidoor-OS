@@ -58,7 +58,7 @@ uint32 *acpiGetRSDPtr(void)
    for(uint8 *addr = 0xE0000 + 0xFFFF800000000000; (uint64) addr < 0x100000 + 0xFFFF800000000000; addr++)
    {
       rsdp = acpiCheckRSDPtr(addr);
-      if (rsdp != NULL) {printf("lel %x\n", rsdp); return rsdp;}
+      if (rsdp != NULL) return rsdp;
    }
    printf("[INFO] No RSD PTR found\n");
    return NULL;

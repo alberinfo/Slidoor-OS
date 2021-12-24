@@ -22,7 +22,7 @@ void kmain()
                 if(comm[0] == '\0') //There's nothing specific to ask
                 {
                     printf("List of comands available:\n help - Shows information about one or all commands\n shutdown - Turns off the PC\n reboot - Reboots the PC\n clear - Clears the screen\n time - Show the actual time\n");
-                    printf(" info - Show information about different things in the PC\n echo - Print what you write after the command\n");
+                    printf(" info - Show information about different things in the PC\n echo - Print what you write after the command\n install $a,$b - Copies the contents of drive $a into drive $b. It is assumed that drive $a contains the operating system from which the computer has booted on.\n");
                 } else {
                     print("Command not recognized. Check for the syntax or if the command is available\n");
                 }
@@ -118,18 +118,20 @@ void kmain()
                     SourceDrive += comm[i]-48; //Conversion to int
                 }
 
-                comm += offset + 1;
+                comm += offset+1;
                 int DestDrive = 0; offset = 0;
                 for(int i = 0; comm[i]; i++, offset++)
                 {
                     DestDrive *= 10;
                     DestDrive += comm[i]-48; //Conversion to int
                 }
-                comm += offset;
+                comm += offset + 1;
                 printf("SourceDrive: %i, DestDrive: %i\n", SourceDrive, DestDrive);
-                if(strlen(comm)) printf("Command not recognized. Check for the syntax or if the command is available\n");
+                if(strlen(comm)) printf("ERROR: Command not recognized\n");
                 else if(SourceDrive > ata_devices.dev_amount || DestDrive > ata_devices.dev_amount) {
-                    printf("One of the argument is invalid, because it exceeds the number of ata devices in the system.\n");
+                    printf("ERROR: Disk number cannot be higher than the amount of ata drives detected by the system\n");
+                } else if(SourceDrive == 0 || DestDrive == 0) {
+                    printf("ERROR: Disk number cannot be lower than 1\n");
                 } else {
                     uint16 *readbuf = kmalloc(1024 * 2); //1024 Words.
                     uint8 *completion = kmalloc(8);
@@ -164,7 +166,7 @@ void kmain()
                 }
                 printf("%i  %i/%i/%i\n", getRtc(0), getRtc(3), getRtc(4), getRtc(5));
             } else if(strlen(comm)) {
-                printf("Command not recognized. Check for the syntax or if the command is available\n");
+                printf("ERROR: Command not recognized\n");
             }
             comm = "";
             last_str = "";

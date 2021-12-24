@@ -391,6 +391,7 @@ struct mboot_info_t
 {
     uint32 name;
     uint32 maps;
+    struct multiboot_tag_vbe *mboot_vbe_info;
     struct multiboot_tag_framebuffer *mboot_fb;
     struct multiboot_tag_acpi *mboot_acpi;
     multiboot_memory_map_t *mboot_mmap;

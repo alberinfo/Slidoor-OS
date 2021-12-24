@@ -3,7 +3,6 @@
 
 #include "../arch/x86/idt.h"
 #include "../memory/pmm.h"
-#include "../drivers/vga/vga.h"
 #include "../drivers/vesa/vesa.h"
 #include "../arch/x86/cpu.h"
 #include "../string/types.h"

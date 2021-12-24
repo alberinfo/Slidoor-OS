@@ -58,22 +58,25 @@ int parseMultiboot(uint64 addr, uint64 kernel_end)
                 break;
             case multiboot_tag_TYPE_MMAP:
             {
-                mboot_info->mboot_mmap = kmalloc(20 * sizeof(multiboot_memory_map_t)/*8*/); //Up to 20 maps (each one is a memory pointer, so only counts as 8 bytes (64bits) per address)
+                mboot_info->mboot_mmap = kmalloc(20 * sizeof(multiboot_memory_map_t)/*8*/); //Up to 20 maps (each one is a memory pointer, so counts as 8 bytes (64bits) per address)
                 multiboot_memory_map_t *mmap;
                 int tmp = 0;
                 for(mmap = ((struct multiboot_tag_mmap*)mtag)->entries; (uint8*)mmap < (uint8*)mtag + mtag->size; mmap = (multiboot_memory_map_t*)((uint64)mmap + ((struct multiboot_tag_mmap*)mtag)->entry_size))
                 {
                     //mboot_info->mboot_mmap[tmp] = kmalloc(sizeof(multiboot_memory_map_t));
-                    multiboot_memory_map_t *lel = &mboot_info->mboot_mmap[tmp];
-                    lel->addr = mmap->addr;
-                    lel->len = mmap->len;
-                    lel->type = mmap->type;
+                    multiboot_memory_map_t *map = &mboot_info->mboot_mmap[tmp];
+                    map->addr = mmap->addr;
+                    map->len = mmap->len;
+                    map->type = mmap->type;
                     tmp++;
                 }
                 mboot_info->maps = tmp;
                 break;
             }
-            case multiboot_tag_TYPE_VBE:
+            case multiboot_tag_TYPE_VBE: ;
+                mboot_info->mboot_vbe_info = kmalloc(sizeof(struct multiboot_tag_vbe));
+                struct multiboot_tag_vbe *vbetag = (struct multiboot_tag_vbe*)mtag;
+                *mboot_info->mboot_vbe_info = *vbetag;
                 break;
             case multiboot_tag_TYPE_FRAMEBUFFER: ;
                 mboot_info->mboot_fb = kmalloc(sizeof(struct multiboot_tag_framebuffer));
@@ -121,6 +124,8 @@ void *get_mboot_info(uint8 type) //Get a ptr to the info
         return (void*)mboot_info->maps;
     } else if(type == multiboot_tag_TYPE_MMAP) {
         return (void*)mboot_info->mboot_mmap;
+    } else if(type == multiboot_tag_TYPE_VBE) {
+        return (void*)mboot_info->mboot_vbe_info;
     } else if(type == multiboot_tag_TYPE_FRAMEBUFFER) {
         return (void*)mboot_info->mboot_fb; //Its already a pointer
     } else if(type == multiboot_tag_TYPE_ACPI_OLD || type == multiboot_tag_TYPE_ACPI_NEW) {
