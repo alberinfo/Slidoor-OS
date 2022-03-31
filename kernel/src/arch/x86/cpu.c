@@ -113,7 +113,7 @@ void wrmsr(uint32 msr, uint32 low, uint32 high)
 
 
 string cpuname2str(uint32 eax, uint32 ebx, uint32 ecx, uint32 edx) {
-	string str = kmalloc(32);
+	string str = kmalloc(17);
 	for(uint8 j = 0; j < 4; j++) {
 		str[j] = eax >> (8 * j);
 		str[j + 4] = ebx >> (8 * j);
@@ -121,8 +121,7 @@ string cpuname2str(uint32 eax, uint32 ebx, uint32 ecx, uint32 edx) {
 		str[j + 12] = edx >> (8 * j);
 	}
     str[16] = '\0';
-    free(str);
-    return str;
+	return str;
 }
 
 void CpuIntel() {
@@ -265,7 +264,9 @@ void CpuIntel() {
         cpu_info.name = "";
 		for(uint32 j = 0x80000002; j <= 0x80000004; j++) {
 			cpuid(j, eax, ebx, ecx, edx);
-			cpu_info.name = strcat(cpu_info.name, cpuname2str(eax, ebx, ecx, edx));
+			string tmp = cpuname2str(eax, ebx, ecx, edx);
+			cpu_info.name = strcat(cpu_info.name, tmp);
+			free(tmp);
 		}
 	}
 	cpu_info.stepping = stepping;
@@ -341,7 +342,9 @@ void CpuAmd(void) {
 	if(extended >= 0x80000002) {
 		for(uint32 j = 0x80000002; j <= 0x80000004; j++) {
 			cpuid(j, eax, ebx, ecx, edx);
-			cpu_info.name = strcat(cpu_info.name, cpuname2str(eax, ebx, ecx, edx));
+			string tmp = cpuname2str(eax, ebx, ecx, edx);
+			cpu_info.name = strcat(cpu_info.name, tmp);
+			free(tmp);
 		}
 	}
 	/*if(extended >= 0x80000007) {

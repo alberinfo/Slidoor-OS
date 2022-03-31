@@ -2,7 +2,7 @@
 
 GCC="../Cross-compiler/gcc/x86_64-elf-gcc-8.3.0"
 LD="../Cross-compiler/ld/bin/ld"
-WINIMG="../OSinWin"
+WINIMG="../OSInWin"
 
 # clean previous build files
 rm -f kernel/obin/*.o
@@ -47,7 +47,7 @@ nasm -f elf64 -w -all kernel/src/arch/x86/smp.asm -o kernel/obin/smpasm.o
 "$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/arch/x86/isr.c -o kernel/obin/isr.o -w
 "$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/arch/x86/irq.c -o kernel/obin/irq.o -w
 "$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/memory/paging.c -o kernel/obin/paging.o -w
-"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/memory/pmm.c -o kernel/obin/pmm.o -w
+"$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -c "kernel/src/memory/pmm (pep).c" -o kernel/obin/pmm.o -w
 "$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/rtc/rtc.c -o kernel/obin/rtc.o -w
 "$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/sleep/sleep.c -o kernel/obin/sleep.o -w
 "$GCC" -m64 -fno-stack-protector -mno-red-zone -msse2 -ftree-vectorize -mcmodel=large -I. -O3 -c kernel/src/drivers/pit/pit.c -o kernel/obin/pit.o -w
@@ -86,10 +86,9 @@ if [ "$EMULATOR" = 0 ]; then
     rm *.img.lock
     bochs -q -f bochsrc.bxrc
 elif [ "$EMULATOR" = 1 ]; then
-    qemu-system-x86_64 -cpu SandyBridge -cdrom Slidoor.iso -hda disk.img -debugcon stdio -smp 2 -m 32M #-S -s & gdb -w obin/bootloader.o \
-#    -ex 'target remote localhost:1234' \
-#    -ex 'return' \
-#    -ex 'c' \
+    qemu-system-x86_64 -accel tcg -cpu SandyBridge -boot d -cdrom Slidoor.iso -hda disk.img -debugcon stdio -smp 4 -m 32M #-gdb tcp::1234 & gdb -w kernel/obin/bootloader.bin \
+    #-ex 'target remote localhost:1234' \
+    #-ex 'c'
 else
     read -n 1 -s -r -p "Option $EMULATOR is not in the emulator list. Press any key to continue."
     echo

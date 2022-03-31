@@ -113,8 +113,7 @@ void printch(uint8 c)
 
 void printf(string str, ...)
 {
-	CPUDisableInts();
-    va_list args;
+	va_list args;
     va_start(args, str);
     for(int i = 0; str[i] != '\0'; i++)
     {
@@ -152,7 +151,6 @@ void printf(string str, ...)
         }
     }
     va_end(args);
-    CPUEnableInts();
     return;
 }
 

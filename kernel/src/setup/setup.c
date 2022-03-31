@@ -11,6 +11,7 @@ void dosetup(uint64 mboot_addr, uint64 kernel_end)
     parseMultiboot(mboot_addr, kernel_end);
     VesaInit();
     ConsoleInit();
+    kbBufferInit();
     printf("[ ");
     printcolor("OK", 0, 0x1FFC00);
     printf(" ] IDT Set-UP - Done!\n");
@@ -21,7 +22,7 @@ void dosetup(uint64 mboot_addr, uint64 kernel_end)
     printcolor("OK", 0,0x1FFC00);
     printf(" ] Multiboot Parsing - Done!\n");
     pitInit(1000); //hz
-    int AcpiStatus = initAcpi();
+    int AcpiStatus = true;//initAcpi();
     if(!AcpiStatus)
     {
         printf("[ ");
@@ -32,10 +33,11 @@ void dosetup(uint64 mboot_addr, uint64 kernel_end)
         printcolor("PANIC", 0, 0xFFE00000);
         printf(" ] Can't use ACPI! - Continuing...\n");
     }
-    detectCpu();
+
+    //detectCpu();
     PciInit();
     printf("[ ");
     printcolor("OK", 0, 0x1FFC00);
     printf(" ] PCI Bus Init - Done!\n");
-    if(!AcpiStatus) SMP_Start();
+    //if(!AcpiStatus) SMP_Start();
 }

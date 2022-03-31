@@ -4,8 +4,6 @@
 For reference on AML Encodings, look at uefi.org/sites/default/files/resources/ACPI_6_3_final_Jan30.pdf at section 20
 */
 
-int fucker = 0;
-
 void /*for now void, may be an int*/ AcpiEvalAMLCustomRoot(void *CRoot, uint8 *ptr, uint32 size)
 {
 	struct AcpiNamespaceBlock_t *current_node = CRoot;
@@ -48,7 +46,7 @@ void /*for now void, may be an int*/ AcpiEvalAMLCustomRoot(void *CRoot, uint8 *p
             
             ptr += block->size+2;//two bytes for the type
             i += block->size+2;
-        } else if(AML_CheckIsPackage(ptr)) { //We may have a packet inside this packet. Search / think how to handle it.
+        } else if(AML_CheckIsPackage(ptr)) { //We may have a package inside this package. Search / think how to handle it.
         	struct AcpiNamespaceBlock_t *block = kmalloc(sizeof(struct AcpiNamespaceBlock_t));
         	memzero(block, sizeof(struct AcpiNamespaceBlock_t));
 
@@ -60,7 +58,9 @@ void /*for now void, may be an int*/ AcpiEvalAMLCustomRoot(void *CRoot, uint8 *p
             block->type = AML_PackageOp;
         	block->size = *(ptr+6)-1;
         	block->addr = ptr+6+PkgLeadByte; //We first point to the amount of values in the package.
-        	AcpiCreateNamespaceBlock(current_node, block);
+        	
+            AcpiCreateNamespaceBlock(current_node, block);
+            
             ptr += block->size+6;//The size of the NameOp
         	i += block->size+6;
     	} else if(AML_CheckIsMethod(ptr)) { //We also need to find a way of executing whats inside this
@@ -75,7 +75,9 @@ void /*for now void, may be an int*/ AcpiEvalAMLCustomRoot(void *CRoot, uint8 *p
             block->type = AML_MethodOp;
             block->size = *(ptr+1)-1;
             block->addr = ptr+1+PkgLeadByte+4+AML_GetMethodArgCount(ptr)+1; //Base + Op offset + Length offset + Name offset + Argument_count offset + Method Flag offset
+            
             AcpiCreateNamespaceBlock(current_node, block);
+            
             ptr += block->size+1;
             i += block->size+1;
         }

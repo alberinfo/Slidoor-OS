@@ -223,11 +223,12 @@ struct ata_dev_t
     bool slave;
     bool LBA48; //Set if it supports LBA48 (if clear, it only supports PIO28)
     bool DMA; //Set if device supports DMA Based transfers
+    uint32 sectorCount; //amount of LBA sectors
+    uint32 sectorSize; //Size of each logical sector in bytes
     uint64 size; //In MB
     uint16 io_base;
     uint16 ctrl_base;
     uint32 busmaster;
-    uint32 prdt_addr; //Transfer Address
     uint64 IDENTIFY_addr; //Holds a pointer to the data recieved from the identify command sent at the ata controller init. If type = pata || sata, then the struct used is a ata_identify_t. else if type = patapi || satapi, then the struct used is ata_identify_packet_t. if type = unknown, the drive must not be used.
 } __attribute__((packed));
 

@@ -3,12 +3,12 @@
 int acpiParseRSDT(uint32 *ptr)
 {
    bool parsed_facp = false;
-   ptr = (uint64)0xFFFF800000000000 + (uint32)ptr;
+   ptr = (uint64)ptr + 0xFFFF800000000000;
    // check if address is correct  ( if acpi is available on this pc )
    if (acpiCheckHeader(ptr, "RSDT") == 0 || acpiCheckHeader(ptr, "XSDT") == 0)
    {
       // the RSDT contains an unknown number of pointers to acpi tables
-      int entrys = *(ptr + 1);
+      uint32 entrys = *(ptr + 1);
       entrys = (entrys-36) / 4;
       ptr += 9;   // skip header information
       while (0<entrys--)

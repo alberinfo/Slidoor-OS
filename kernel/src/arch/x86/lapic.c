@@ -146,7 +146,7 @@ void lapicEnable(uint32 flags)
     return;
 }
 
-void lapicConfigureNMI(uint8 lint, uint8 flags)
+void lapicConfigureNMI(uint8 lint, uint16 flags)
 {
     if(lint == 0)
     {

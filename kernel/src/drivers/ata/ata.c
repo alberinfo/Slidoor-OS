@@ -12,8 +12,6 @@ void ata_queue_erase() //Erase the first element
     ata_transfer_in_progress = true; //Disable execution of ata RW requests in queue
     if(ata_queue.size > 1)
     {
-        //Free the buffer created in ata_read / write
-        free(ata_queue.queue->buffer);
         //Clear the information
         ata_queue.queue->ata_device = 0;
         ata_queue.queue->buffer = 0;
@@ -27,8 +25,6 @@ void ata_queue_erase() //Erase the first element
         free(ata_queue.first_element_addr);
         ata_queue.first_element_addr = ata_queue.queue;
     } else if(ata_queue.size == 1) {
-        //Free the buffer created in ata_read / write
-        free(ata_queue.queue->buffer);
         //Clear the information
         ata_queue.queue->ata_device = 0;
         ata_queue.queue->buffer = 0;
@@ -93,11 +89,12 @@ void ata_execute_queue()
                 if(!element.ata_device->DMA)
                 {
                     buffaddr = atapi_pio_read(element.ata_device, element.lba, element.sectors);
-                    memcpy_fast(element.buffer, buffaddr, 2048*element.sectors); //Each atapi read is 2048 bytes long
+                    memcpy_fast(element.buffer, buffaddr, element.ata_device->sectorSize*element.sectors); //Each atapi read is 2048 bytes long
                     free(buffaddr);
                 } else {
                     buffaddr = atapi_dma_read(element.ata_device, element.lba, element.sectors);
-                    memcpy_fast(element.buffer, buffaddr, 2048*element.sectors);
+                    memcpy_fast(element.buffer, buffaddr, element.ata_device->sectorSize*element.sectors);
+                    free(buffaddr);
                 }
             }
         } else {
@@ -106,11 +103,12 @@ void ata_execute_queue()
                 if(!element.ata_device->DMA)
                 {
                     buffaddr = ata_pio_read(element.ata_device, element.lba, element.sectors);
-                    memcpy_fast(element.buffer, buffaddr, 512*element.sectors); //each ata read is 512 bytes long
+                    memcpy_fast(element.buffer, buffaddr, element.ata_device->sectorSize*element.sectors); //each ata read is 512 bytes long
                     free(buffaddr);
                 } else {
                     buffaddr = ata_dma_read(element.ata_device, element.lba, element.sectors);
-                    memcpy_fast(element.buffer, buffaddr, 512*element.sectors);
+                    memcpy_fast(element.buffer, buffaddr, element.ata_device->sectorSize*element.sectors);
+                    free(buffaddr);
 
                 }
             } else {
@@ -120,7 +118,7 @@ void ata_execute_queue()
                 } else {
                     ata_dma_write(element.ata_device, element.lba, element.sectors, element.buffer);
                 }
-                free(element.buffer); //This was allocated in order to save the sector. Free plz.
+                free(element.buffer); //This was allocated in order to save the sector(s). Free plz.
             }
         }
         *element.completed = true;
@@ -152,34 +150,40 @@ void ata_irq_handler(bool bus) //Could be zero or one
 
 void ata_wait_irq(struct ata_dev_t *ata_device)
 {
+    return;
     if(!ata_device->channel)
     {
         if(!ata_device->slave)
         {
-            while(!ATA0_MasterRDY) asm volatile("hlt"); //Halt CPU until next interrupt arrives
+            if(!ata_device->DMA) while(!ATA0_MasterRDY) asm volatile("hlt"); //Halt CPU until next interrupt arrives
+            else while(!ATA0_MasterRDY || !(inportb(ata_device->busmaster + BM_STT_REG) & 4)) asm volatile("hlt"); //same as above, but we check for the irq origin on the PCI IDE controller
             ATA0_MasterRDY = false;
             uint8 stat = inportb(ata_device->ctrl_base + ALT_STT_REG);
-            if(!(stat & (1 << 7)) && stat & (1 << 3)) ATA0_MasterRDY = true;
+            if(!(stat & (1 << STT_BSY)) && stat & (1 << STT_DRQ)) ATA0_MasterRDY = true;
         } else {
-            while(!ATA0_SlaveRDY) asm volatile("hlt"); //Halt CPU until next interrupt arrives
+            if(!ata_device->DMA) while(!ATA0_SlaveRDY) asm volatile("hlt"); //Halt CPU until next interrupt arrives
+            else while(!ATA0_SlaveRDY || !(inportb(ata_device->busmaster + BM_STT_REG) & 4)) asm volatile("hlt"); //same as above, but we check for the irq origin on the PCI IDE controller
             ATA0_SlaveRDY = false;
             uint8 stat = inportb(ata_device->ctrl_base + ALT_STT_REG);
-            if(!(stat & (1 << 7)) && stat & (1 << 3)) ATA0_SlaveRDY = true;
+            if(!(stat & (1 << STT_BSY)) && stat & (1 << STT_DRQ)) ATA0_SlaveRDY = true;
         }
     } else {
         if(!ata_device->slave)
         {
-            while(!ATA1_MasterRDY) asm volatile("hlt"); //Halt CPU until next interrupt arrives
+            if(!ata_device->DMA) while(!ATA1_MasterRDY) asm volatile("hlt"); //Halt CPU until next interrupt arrives
+            else while(!ATA1_MasterRDY || !(inportb(ata_device->busmaster + BM_STT_REG) & 4)) asm volatile("hlt"); //same as above, but we check for the irq origin on the PCI IDE controller
             ATA1_MasterRDY = false;
             uint8 stat = inportb(ata_device->ctrl_base + ALT_STT_REG);
-            if(!(stat & (1 << 7)) && stat & (1 << 3)) ATA1_MasterRDY = true;
+            if(!(stat & (1 << STT_BSY)) && stat & (1 << STT_DRQ)) ATA1_MasterRDY = true;
         } else {
-            while(!ATA1_SlaveRDY) asm volatile("hlt"); //Halt CPU until next interrupt arrives
+            if(!ata_device->DMA) while(!ATA1_SlaveRDY) asm volatile("hlt"); //Halt CPU until next interrupt arrives
+            else while(!ATA1_SlaveRDY || !(inportb(ata_device->busmaster + BM_STT_REG) & 4)) asm volatile("hlt"); //same as above, but we check for the irq origin on the PCI IDE controller
             ATA1_SlaveRDY = false;
             uint8 stat = inportb(ata_device->ctrl_base + ALT_STT_REG);
-            if(!(stat & (1 << 7)) && stat & (1 << 3)) ATA1_SlaveRDY = true;
+            if(!(stat & (1 << STT_BSY)) && stat & (1 << STT_DRQ)) ATA1_SlaveRDY = true;
         }
     }
+
     return;
 }
 
@@ -231,11 +235,8 @@ void ata_soft_reset(struct ata_dev_t *ata_device) //Soft reset ata bus
 
 void ata_change_drive(uint16 io_base, uint16 ctrl_base, bool slave)
 {
-    outportb(io_base + DRV_REG, 0xA0 + (slave << 4));
-    inportb(ctrl_base);
-    inportb(ctrl_base);
-    inportb(ctrl_base);
-    inportb(ctrl_base);
+    outportb(io_base + DRV_REG, 0xE0 | (slave << 4));
+    sleep(1, SleepMili); //Should be 400ns
 }
 
 int ata_identify_type(struct ata_dev_t *ata_device, int drive_num)
@@ -244,17 +245,17 @@ int ata_identify_type(struct ata_dev_t *ata_device, int drive_num)
     uint16 signature = inportb(ata_device->io_base + LBA_MID) | (inportb(ata_device->io_base + LBA_HI) << 8);
     if(signature == 0xEB14)
     {
-        ata_device->type = kmalloc(6); //6 chars
-        strcpy(ata_device->type, "PATAPI");
+        ata_device->type = kmalloc(7); //6 chars + End of string
+        strcpy(ata_device->type, "PATAPI\0");
     } else if(signature == 0x9669) {
-        ata_device->type = kmalloc(6); //6 chars
-        strcpy(ata_device->type, "SATAPI");
+        ata_device->type = kmalloc(7); //6 chars + End of string
+        strcpy(ata_device->type, "SATAPI\0");
     } else if(signature == 0) {
-        ata_device->type = kmalloc(4); //4 chars
-        strcpy(ata_device->type, "PATA");
+        ata_device->type = kmalloc(5); //4 chars + End of string
+        strcpy(ata_device->type, "PATA\0");
     } else if(signature == 0xC33C) {
-        ata_device->type = kmalloc(4); //4 chars
-        strcpy(ata_device->type, "SATA");
+        ata_device->type = kmalloc(5); //4 chars + End of string
+        strcpy(ata_device->type, "SATA\0");
     } else {
         ata_delete_drive(drive_num);
         return -1; //Device does not exist or is non-ata
@@ -264,20 +265,14 @@ int ata_identify_type(struct ata_dev_t *ata_device, int drive_num)
 
 string ata_identify_word2ascii(uint16 *buf, uint8 start, uint8 end)
 {
-    string str = kmalloc(end - start + 1);
+    string str = kmalloc((end - start + 1) * 2); //start and end are measured in entries, which are 2 bytes long
     uint8 stridx = 0;
-    for(int i = start; i <= end; i++, stridx += 2)
+    for(int i = start; i <= end && buf[i] != 0x2020; i++, stridx += 2)
     {
-        if(buf[i] != 0x2020)
-        {
-            str[stridx] = ((uint8)(buf[i] >> 8));
-            str[stridx+1] = ((uint8)buf[i]);
-        } else {
-            break;
-        }
+        str[stridx] = ((uint8)(buf[i] >> 8));
+        str[stridx+1] = ((uint8)(buf[i] & 0xFF));
     }
     str[stridx] = '\0';
-    //printf("ATA ID TO ASCII: %s\n", str);
     return str;
 }
 
@@ -290,17 +285,18 @@ void ata_identify(struct ata_dev_t *ata_device, int drive_num /*only used in cas
     outportb(ata_device->io_base + LBA_MID, 0);
     outportb(ata_device->io_base + LBA_HI, 0);
     outportb(ata_device->io_base + CMD_REG, 0xEC); //#IDENTIFY
-    
+
     if(inportb(ata_device->ctrl_base + ALT_STT_REG) == 0) { ata_delete_drive(drive_num); return; } //The device does not exist
     ata_wait_irq(ata_device);
-    if((inportb(ata_device->io_base + LBA_MID) && inportb(ata_device->io_base + LBA_HI)) || inportb(ata_device->io_base + ERR_REG) & (1 << 2)) { atapi_identify(ata_device, drive_num); return; }
-    if(inportb(ata_device->ctrl_base + ALT_STT_REG) == 0 || inportb(ata_device->ctrl_base + ALT_STT_REG) & 1) { ata_delete_drive(drive_num); return; }
-    
+    if((inportb(ata_device->io_base + LBA_MID) && inportb(ata_device->io_base + LBA_HI)) || inportb(ata_device->io_base + ERR_REG) & (1 << 2)) { atapi_identify(ata_device, drive_num); /*return;*/ }
+    if(inportb(ata_device->ctrl_base + ALT_STT_REG) == 0 || inportb(ata_device->ctrl_base + ALT_STT_REG) & 1) { atapi_identify(ata_device, drive_num); return; }
+
     uint16 *buffer = kmalloc(256*2); //256 Words, each word being two bytes.
     for(int i = 0; i < 256; i++)
     {
         buffer[i] = inportw(ata_device->io_base + DATA_REG);
     }
+
     struct ata_identify_t *IDENTIFY = kmalloc(sizeof(struct ata_identify_t));
     IDENTIFY->GCBSI = buffer[0];
     IDENTIFY->Sconf = buffer[2];
@@ -352,9 +348,11 @@ void ata_identify(struct ata_dev_t *ata_device, int drive_num /*only used in cas
     if(IDENTIFY->LBA48_AddressableSec0 != 0 || IDENTIFY->LBA48_AddressableSec1 != 0 || IDENTIFY->LBA48_AddressableSec2 != 0 || IDENTIFY->LBA48_AddressableSec3 != 0)
     {
         ata_device->LBA48 = true;
+        ata_device->sectorCount = ata_device->size = (IDENTIFY->LBA48_AddressableSec0 | ((uint32)IDENTIFY->LBA48_AddressableSec1 << 16) | ((uint64)IDENTIFY->LBA48_AddressableSec2 << 32) | ((uint64)IDENTIFY->LBA48_AddressableSec3 << 48))+1;
         ata_device->size = (IDENTIFY->LBA48_AddressableSec0 | ((uint32)IDENTIFY->LBA48_AddressableSec1 << 16) | ((uint64)IDENTIFY->LBA48_AddressableSec2 << 32) | ((uint64)IDENTIFY->LBA48_AddressableSec3 << 48)) * 512 / 1024 / 1024;
     } else {
         ata_device->LBA48 = false;
+        ata_device->sectorCount = (IDENTIFY->PIO28_AddressableSec0 | ((uint32)IDENTIFY->PIO28_AddressableSec1 << 16))+1;
         ata_device->size = (IDENTIFY->PIO28_AddressableSec0 | ((uint32)IDENTIFY->PIO28_AddressableSec1 << 16)) * 512 / 1024 / 1024;
     }
     IDENTIFY->STTP = buffer[104];
@@ -366,6 +364,12 @@ void ata_identify(struct ata_dev_t *ata_device, int drive_num /*only used in cas
     IDENTIFY->UIDhi = buffer[111];
     IDENTIFY->WxSec0 = buffer[117];
     IDENTIFY->WxSec1 = buffer[118];
+    if((IDENTIFY->SecSize & (1 << 12)) && (IDENTIFY->WxSec0 << 16 | IDENTIFY->WxSec1))
+    {
+        ata_device->sectorSize = (IDENTIFY->WxSec0 << 16 | IDENTIFY->WxSec1) * 2; //convert from words to bytes
+    } else {
+        ata_device->sectorSize = 512; //512 bytes
+    }
     IDENTIFY->SupSet = buffer[119];
     IDENTIFY->CMDSet_FtEn3 = buffer[120];
     IDENTIFY->SecuritySTT = buffer[128];
@@ -390,9 +394,9 @@ void ata_identify(struct ata_dev_t *ata_device, int drive_num /*only used in cas
     IDENTIFY->IntegrityWord = buffer[255];
     ata_device->IDENTIFY_addr = (uint64)IDENTIFY;
     free(buffer);
-    if(IDENTIFY->UDMASup >> 8 || IDENTIFY->MDMASup >> 8) {ata_device->DMA = true; return;}
-    uint32 prdt_addr = ((uint64)kmalloc_aligned(0x8000, 0x10000)) - 0xFFFF800000000000;
-    ata_device->prdt_addr = prdt_addr;
+
+    if((IDENTIFY->UDMASup >> 8 & ((1 << 7)-1)) || (IDENTIFY->MDMASup >> 8 & ((1 << 3)-1))) {ata_device->DMA = true; return; }
+
     for(int i = 6, ander = 1 << 6; i >= 0; i--)
     {
         if(IDENTIFY->UDMASup & ander) //Is UDMA mode (i) supported?
@@ -400,8 +404,8 @@ void ata_identify(struct ata_dev_t *ata_device, int drive_num /*only used in cas
             //Enable UDMA mode (i)
             outportb(ata_device->io_base + DRV_REG, 0xE0 | (ata_device->slave << 4)); //Drive was already selected
             ata_400ns_delay(ata_device);
-            outportb(ata_device->io_base + SEC_CNT_REG, 8 /*0b1000*/ << 3 | i); //UDMA Mode (i)
             outportb(ata_device->io_base + FT_REG, 3); //Change drive's transfer mode
+            outportb(ata_device->io_base + SEC_CNT_REG, 8 /*0b1000*/ << 3 | i); //UDMA Mode (i)
             outportb(ata_device->io_base + CMD_REG, 0xEF); //Set features
             ata_wait_irq(ata_device);
             ata_device->DMA = true;
@@ -414,10 +418,10 @@ void ata_identify(struct ata_dev_t *ata_device, int drive_num /*only used in cas
         if(IDENTIFY->MDMASup & ander) //Is MDMA mode (i) supported?
         {
             //Enable MDMA mode (i)
-            outportb(ata_device->io_base + DRV_REG, 0xA0 | (ata_device->slave << 4)); //Drive was already selected
+            outportb(ata_device->io_base + DRV_REG, 0xE0 | (ata_device->slave << 4)); //Drive was already selected
             ata_400ns_delay(ata_device);
-            outportb(ata_device->io_base + SEC_CNT_REG, 4 /*0b100*/ << 3 | i); //MDMA Mode (i)
             outportb(ata_device->io_base + FT_REG, 3); //Change drive's transfer mode
+            outportb(ata_device->io_base + SEC_CNT_REG, 4 /*0b100*/ << 3 | i); //MDMA Mode (i)
             outportb(ata_device->io_base + CMD_REG, 0xEF); //Set features
             ata_wait_irq(ata_device);
             ata_device->DMA = true;
@@ -455,22 +459,20 @@ void init_ata(uint32 busmaster) //soft reset ata bus (ata0 and ata1, but only if
     ata_queue.first_element_addr = 0;
     ata_queue.last_element_addr = 0;
     ata_transfer_in_progress = false;
-
     struct ata_dev_t temporary_dev;
     temporary_dev.ctrl_base = GLOBAL_ATA0_CTRL;
     ata_soft_reset(&temporary_dev);
 
     uint8 bus = inportb(GLOBAL_ATA0_CTRL + ALT_STT_REG);
-    if(!(bus & 1 << 5) && !(bus & 1 << 2) && !(bus & 1 << 1) && !(!bus && !inportb(GLOBAL_ATA0_IO + LBA_MID) && !inportb(GLOBAL_ATA0_IO + LBA_HI)))
+    if(!(bus & (1 << STT_DF)) && !(bus & (1 << STT_CORR)) && !(bus & (1 << STT_IDX)))
     {
         ata_add_drive(GLOBAL_ATA0_IO, GLOBAL_ATA0_CTRL, busmaster, 0, ATA_MASTER);
         ata_identify_type(&ata_devices.devices[ata_devices.dev_amount-1].type, ata_devices.dev_amount-1);
     }
 
     ata_change_drive(GLOBAL_ATA0_IO, GLOBAL_ATA0_CTRL, ATA_SLAVE);
-    
     bus = inportb(GLOBAL_ATA0_CTRL + ALT_STT_REG);
-    if(!(bus & 1 << 5) && !(bus & 1 << 2) && !(bus & 1 << 1) && !(!bus && !inportb(GLOBAL_ATA0_IO + LBA_MID) && !inportb(GLOBAL_ATA0_IO + LBA_HI)))
+    if(!(bus & (1 << STT_DF)) && !(bus & (1 << STT_CORR)) && !(bus & (1 << STT_IDX)))
     {
         ata_add_drive(GLOBAL_ATA0_IO, GLOBAL_ATA0_CTRL, busmaster, 0, ATA_SLAVE);
         ata_identify_type(&ata_devices.devices[ata_devices.dev_amount-1].type, ata_devices.dev_amount-1);
@@ -481,16 +483,16 @@ void init_ata(uint32 busmaster) //soft reset ata bus (ata0 and ata1, but only if
 
     
     bus = inportb(GLOBAL_ATA1_CTRL + ALT_STT_REG);
-    if(!(bus & 1 << 5) && !(bus & 1 << 2) && !(bus & 1 << 1) && !(!bus && !inportb(GLOBAL_ATA0_IO + LBA_MID) && !inportb(GLOBAL_ATA0_IO + LBA_HI)))
+    if(!(bus & (1 << STT_DF)) && !(bus & (1 << STT_CORR)) && !(bus & (1 << STT_IDX)))
     {
         ata_add_drive(GLOBAL_ATA1_IO, GLOBAL_ATA1_CTRL, busmaster+8, 1, ATA_MASTER);
         ata_identify_type(&ata_devices.devices[ata_devices.dev_amount-1].type, ata_devices.dev_amount-1);
     }
-    
+
     ata_change_drive(GLOBAL_ATA1_IO, GLOBAL_ATA1_CTRL, ATA_SLAVE);
 
     bus = inportb(GLOBAL_ATA1_CTRL + ALT_STT_REG);
-    if(!(bus & 1 << 5) && !(bus & 1 << 2) && !(bus & 1 << 1) && !(!bus && !inportb(GLOBAL_ATA0_IO + LBA_MID) && !inportb(GLOBAL_ATA0_IO + LBA_HI)))
+    if(!(bus & (1 << STT_DF)) && !(bus & (1 << STT_CORR)) && !(bus & (1 << STT_IDX)))
     {
         ata_add_drive(GLOBAL_ATA1_IO, GLOBAL_ATA1_CTRL, busmaster+8, 1, ATA_SLAVE);
         ata_identify_type(&ata_devices.devices[ata_devices.dev_amount-1].type, ata_devices.dev_amount-1);
@@ -522,11 +524,11 @@ void ata_write(struct ata_dev_t *ata_device, uint64 lba, uint16 sectors, uint16 
     uint16 *actual_buffer = 0;
     if(!ATAPI)
     {
-        actual_buffer = kmalloc(512*sectors);
-        memcpy_fast(actual_buffer, buffer, 512*sectors);
+        actual_buffer = kmalloc(ata_device->sectorSize*sectors);
+        memcpy_fast(actual_buffer, buffer, ata_device->sectorSize*sectors);
     } else {
-        actual_buffer = kmalloc(2048*sectors);
-        memcpy_fast(actual_buffer, buffer, 2048*sectors);
+        actual_buffer = kmalloc(ata_device->sectorSize*sectors);
+        memcpy_fast(actual_buffer, buffer, ata_device->sectorSize*sectors);
     }
     ata_queue_add(ata_device, lba,sectors, 1, ATAPI, actual_buffer, completion_addr);
     ata_execute_queue(); //If we did not execute any of the ata requests, then theres either a command in progress or the device is not ready

@@ -9,7 +9,7 @@
 #include "../../drivers/sleep/sleep.h"
 
 void lapicEnable(uint32 flags);
-void lapicConfigureNMI(uint8 lint, uint8 flags);
+void lapicConfigureNMI(uint8 lint, uint16 flags);
 void lapicIPI(uint32 apicID, uint32 value);
 void APWakeup(uint32 apicID, uint32 StartAddr);
 void SMP_Start(void);

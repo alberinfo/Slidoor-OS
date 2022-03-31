@@ -2,7 +2,7 @@
 plugin_ctrl: unmapped=1, biosdev=1, speaker=1, extfpuirq=1, parallel=1, serial=1
 config_interface: textconfig
 display_library: x
-memory: host=512, guest=512
+memory: host=32, guest=32
 romimage: file="/usr/share/bochs/BIOS-bochs-latest"
 vgaromimage: file="/usr/share/bochs/VGABIOS-lgpl-latest"
 boot: cdrom
@@ -20,7 +20,7 @@ ata3: enabled=0
 pci: enabled=1, chipset=i440fx
 vga: extension=vbe, update_freq=60
 cpuid: apic=x2apic, simd=avx512, xsave=1
-cpu: count=2, ips=5000000, model=bx_generic, reset_on_triple_fault=0, cpuid_limit_winnt=0, ignore_bad_msrs=1, mwait_is_nop=0
+cpu: ips=5000000, model=bx_generic, reset_on_triple_fault=0, cpuid_limit_winnt=0, ignore_bad_msrs=1, mwait_is_nop=0
 print_timestamps: enabled=0
 debugger_log: -
 magic_break: enabled=1
@@ -29,11 +29,11 @@ private_colormap: enabled=0
 clock: sync=none, time0=local, rtc_sync=1
 # no cmosimage
 # no loader
-log: -
+log: bochslog.txt
 logprefix: %t%e%d
 panic: action=ask
 error: action=report
-info: action=report
+info: action=ignore
 debug: action=ignore, pci_ide=ignore, harddrv=ignore
 debug_symbols: file=kern.sym
 keyboard: type=mf, serial_delay=200, paste_delay=100000, keymap=

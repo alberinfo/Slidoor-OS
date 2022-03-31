@@ -1,4 +1,5 @@
 #include "kernel.h"
+#include "kernel/src/memory/pmm (pep).h"
 
 extern uint8 kernel_end;
 
@@ -7,9 +8,11 @@ void kmain()
     uint64 mboot_addr = 0;
     asm volatile("mov %%rbx, %0" : "=b" (mboot_addr) : :);
     dosetup(mboot_addr+0xFFFF800000000000, &kernel_end);
+
     printf("\nBooted with %s\n>", get_mboot_info(multiboot_tag_TYPE_BOOT_LOADER_NAME));
     last_str = "";
     end_str = 0;
+
     while(1)
     {
         if(end_str)
@@ -127,16 +130,30 @@ void kmain()
                 }
                 comm += offset + 1;
                 printf("SourceDrive: %i, DestDrive: %i\n", SourceDrive, DestDrive);
-                if(strlen(comm)) printf("ERROR: Command not recognized\n");
-                else if(SourceDrive > ata_devices.dev_amount || DestDrive > ata_devices.dev_amount) {
+                /*if(strlen(comm)) printf("ERROR: Command not recognized\n");
+                else*/ if(SourceDrive > ata_devices.dev_amount || DestDrive > ata_devices.dev_amount) {
                     printf("ERROR: Disk number cannot be higher than the amount of ata drives detected by the system\n");
                 } else if(SourceDrive == 0 || DestDrive == 0) {
                     printf("ERROR: Disk number cannot be lower than 1\n");
                 } else {
-                    uint16 *readbuf = kmalloc(1024 * 2); //1024 Words.
+                    uint16 *readbuf = kmalloc(64 * 1024);
                     uint8 *completion = kmalloc(8);
-                    uint32 install_size = ((uint64)&kernel_end - 0xFFFF800000000000) / 512;
-                    for(int i = 0; i < install_size; i++)
+                    
+                    int i = 0;
+                    for(i = 0; (i + 31) < ata_devices.devices[SourceDrive-1].sectorCount; i+=32)
+                    {
+                        ata_read(&ata_devices.devices[SourceDrive-1], i, 32, readbuf, completion);
+                        while(*completion == 0);
+                        *completion = 0;
+
+                        ata_write(&ata_devices.devices[DestDrive-1], i*4, 128, readbuf, completion);
+                        while(*completion == 0);
+                        *completion = 0;
+
+                        printf("\r%i sectors of %i written.", i, ata_devices.devices[SourceDrive-1].sectorCount);
+                    }
+                    
+                    for(i; i < ata_devices.devices[SourceDrive-1].sectorCount; i++)
                     {
                         ata_read(&ata_devices.devices[SourceDrive-1], i, 1, readbuf, completion);
                         while(*completion == 0);
@@ -146,10 +163,9 @@ void kmain()
                         while(*completion == 0);
                         *completion = 0;
 
-                        printf("\r");
-                        printf("%i sectors of %i written.", i*4, install_size*4);
+                        printf("\r%i sectors of %i written.", i, ata_devices.devices[SourceDrive-1].sectorCount);
                     }
-                    printf("\n");
+
                     free(readbuf);
                     free(completion);
                 }
