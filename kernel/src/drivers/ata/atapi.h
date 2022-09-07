@@ -1,8 +1,6 @@
 #ifndef ATAPI_H
 #define ATAPI_H
 
-#define ATAPI_GLOBAL_SEC_SIZE 2048
-
 #include "ata.h"
 #include "../../memory/pmm.h"
 

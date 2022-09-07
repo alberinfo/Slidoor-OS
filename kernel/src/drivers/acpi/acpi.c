@@ -3,8 +3,7 @@
 // checks for a given header and validates checksum
 int acpiCheckHeader(uint32 *ptr, char *sig)
 {
-    if(memcmp(ptr, sig, 4) == 0)
-        return 0;
+    if(memcmp(ptr, sig, 4) == 0) return 0;
     return -1;
 }
 

@@ -11,6 +11,7 @@ void dosetup(uint64 mboot_addr, uint64 kernel_end)
     parseMultiboot(mboot_addr, kernel_end);
     VesaInit();
     ConsoleInit();
+    kbBufferInit();
     printf("[ ");
     printcolor("OK", 0, 0x1FFC00);
     printf(" ] IDT Set-UP - Done!\n");

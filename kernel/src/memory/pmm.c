@@ -37,7 +37,7 @@ void *heap_alloc(uint64 size, uint64 alignment, uint32 flags)
                 i = (heap[i] >> 1) +1;
                 continue;
             }
-            uint64 ptr = i * global_heap.block_size + (uint64)heap + heap_block->max * 4;
+            uint64 ptr = (uint64)heap + i * global_heap.block_size + heap_block->max * 4;
 
             if(ptr % alignment != 0)
             {
@@ -50,21 +50,27 @@ void *heap_alloc(uint64 size, uint64 alignment, uint32 flags)
                 }
                 ptr = aligned_ptr;
                 size += difference;
+
+                int aligned_i = (aligned_ptr - (uint64)heap - heap_block->max * 4) / global_heap.block_size;
+                heap[aligned_i] = (i << 1) | 1;
             }
             uint32 blocks_to_allocate = (size / global_heap.block_size) * global_heap.block_size < size ? (size / global_heap.block_size) + 1 : size / global_heap.block_size;
 
             if(!(heap[i+blocks_to_allocate] & 1)) heap[i+blocks_to_allocate] = heap[i];
             heap[i] = ((i+blocks_to_allocate-1)<<1) | 1;
 
+            if(ptr < 0xFFFF800000000000) ptr += 0xFFFF800000000000;
             return (void*)ptr;
         }
     }
+
     printf("FATAL: OUT OF MEMORY\n(alberinfo, please implement a proper handler ffs)\n"); while(1);
     return 0;
 }
 
 void heap_free(void *addr)
 {
+    if(addr < 0xFFFF800000000000) addr += 0xFFFF800000000000;
     for(struct heap_block_t *heap_block = global_heap.heap; heap_block; heap_block = heap_block->next)
     {
         uint32 *heap = &heap_block[1];
@@ -73,7 +79,16 @@ void heap_free(void *addr)
         addr = (uint64)addr - (uint64)heap - heap_block->max * 4;
         uint32 startpoint = (uint64)addr / global_heap.block_size;
         uint32 endpoint = heap[startpoint] >> 1;
+
+        if(endpoint < startpoint && heap[startpoint] & 1) //aligned alloc
+        {
+            heap[startpoint] = 0;
+            startpoint = endpoint;
+            endpoint = heap[startpoint] >> 1;
+        }
+
         heap[startpoint] &= ~((uint32)1);
+
         if(endpoint + 1 < heap_block->max)
         {
             if(!(heap[endpoint + 1] & 1))
@@ -82,6 +97,7 @@ void heap_free(void *addr)
                 heap[endpoint+1] = 0;
             }
         }
+
         for(int i = startpoint-1; i >= heap_block->start; i--)
         {
             if(heap[i] == 0) continue;
@@ -103,7 +119,7 @@ void *kmalloc(uint64 size)
 
 void *malloc(uint64 size)
 {
-    return heap_alloc(size, 1, 7);
+    return heap_alloc(size, 1, 7) - 0xFFFF800000000000;
 }
 
 void *kmalloc_aligned(uint64 size, uint64 alignment)
@@ -113,7 +129,7 @@ void *kmalloc_aligned(uint64 size, uint64 alignment)
 
 void *malloc_alignment(uint64 size, uint64 alignment)
 {
-    return heap_alloc(size, alignment, 7);
+    return heap_alloc(size, alignment, 7) - 0xFFFF800000000000;
 }
 
 void free(void *ptr)

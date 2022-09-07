@@ -54,8 +54,8 @@ struct IOAPIC_NMI
 {
     uint8 type;
     uint8 length;
-    uint8 flags;
-    uint8 GSI; //Global_System_Interrupt
+    uint16 flags;
+    uint32 GSI; //Global_System_Interrupt
 } __attribute__((packed));
 
 struct LAPIC_NMI
@@ -63,7 +63,7 @@ struct LAPIC_NMI
     uint8 type;
     uint8 length;
     uint8 processor_id;
-    uint8 flags;
+    uint16 flags;
     uint8 lint;
 } __attribute__((packed));
 

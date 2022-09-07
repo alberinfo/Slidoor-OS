@@ -102,17 +102,6 @@
 #define AML_BreakPointOp 0xCC
 #define AML_OnesOp 0xFF
 
-static inline bool AML_CheckIsName(uint8 *x)
-{
-	int top = 4;
-	for(int i = 0; i < top; i++) //Names are always 4 characters
-    {
-        if(x[i] == AML_RootChar || x[i] == AML_ParentPrefixChar || x[i] == AML_DualnamePrefix || x[i] == AML_MultinamePrefix) { top++; continue;}
-        if(!(AML_IsDigitChar(x[i]) || AML_IsNameChar(x[i]) || x[i] == AML_NameChar)) return false;
-    }
-	return true;
-}
-
 static inline string AML_GetName(uint8 *x)
 {
 	string ret = kmalloc(4);
@@ -127,6 +116,17 @@ static inline string AML_GetName(uint8 *x)
 	return ret;
 }
 
+static inline bool AML_CheckIsName(uint8 *x)
+{
+	int top = 4;
+	for(int i = 0; i < top; i++) //Names are always 4 characters
+    {
+        if(x[i] == AML_RootChar || x[i] == AML_ParentPrefixChar || x[i] == AML_DualnamePrefix || x[i] == AML_MultinamePrefix) { top++; continue;}
+        if(!(AML_IsDigitChar(x[i]) || AML_IsNameChar(x[i]) || x[i] == AML_NameChar)) return false;
+    }
+	return true;
+}
+
 static inline bool AML_CheckIsScope(uint8 *ptr)
 {
 	uint8 PkgLeadByte = (*(ptr+1) >> 6) + 1; //>> 6 to get the last 2 bits
@@ -136,7 +136,7 @@ static inline bool AML_CheckIsScope(uint8 *ptr)
 static inline bool AML_CheckIsDevice(uint8 *ptr)
 {
 	uint8 PkgLeadByte = (*(ptr+2) >> 6) + 1; //>> 6 to get the last 2 bits
-	return *ptr == (AML_DeviceOp >> 8) && *(ptr+1) == (AML_DeviceOp & 0xFF) && AML_CheckIsName(ptr+PkgLeadByte+2);
+	return *ptr == (AML_DeviceOp >> 8) && *(ptr+1) == (AML_DeviceOp & 0xFF) && AML_CheckIsName(ptr+PkgLeadByte+2+1);
 }
 
 static inline bool AML_CheckIsPackage(uint8 *ptr)

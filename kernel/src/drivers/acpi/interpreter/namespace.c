@@ -37,7 +37,7 @@ void AcpiCreateNamespaceBlock(struct AcpiNamespaceBlock_t *parent, struct AcpiNa
 	current_node->child_amount++;
 
 	uint32 n = strlen(current_node->full_name);
-	block->full_name = kmalloc(strlen(current_node->full_name) + strlen(block->name));
+	block->full_name = kmalloc(strlen(current_node->full_name) + strlen(block->name)+1);
 
 	memcpy_fast(block->full_name, current_node->full_name, n);
 	if(current_node != root) {char dot = '.'; strncpy(block->full_name+n, &dot, 1);n++;}
@@ -103,18 +103,17 @@ void AcpiDeleteNamespaceBlock(string node)
 	return;
 }
 
-void Dumpthatacpi(void *root)
+void AcpiDumpCustomRoot(void *root)
 {
 	struct AcpiNamespaceBlock_t *current_node = root;
-	if(strEql("_INI", current_node->name)) printf("[DUMP] %s, %s, %x\n", current_node->full_name, current_node->name, current_node->type);
 	struct AcpiNamespaceBlockChildList_t *current_childs = current_node->childs;
 	for(int i = 0; i < current_node->child_amount; i++, current_childs = current_childs->next)
 	{
-		Dumpthatacpi(current_childs->child_ptr);
+		AcpiDumpCustomRoot(current_childs->child_ptr);
 	}
 }
 
 void AcpiDumpNamespace(void)
 {
-	Dumpthatacpi(root);
+	AcpiDumpCustomRoot(root);
 }

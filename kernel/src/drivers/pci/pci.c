@@ -24,15 +24,15 @@ uint32 pciRead32(uint32 addr)
 uint16 pciRead16(uint32 addr)
 {
     outportl(CONFIG_ADDR, addr);
-    uint32 data = inportw(CONFIG_DATA);
-    return data;
+    uint32 data = inportl(CONFIG_DATA);
+    return data & ((1 << 16)-1);
 }
 
 uint8 pciRead8(uint32 addr)
 {
     outportl(CONFIG_ADDR, addr);
-    uint32 data = inportb(CONFIG_DATA);
-    return data;
+    uint32 data = inportl(CONFIG_DATA);
+    return data & ((1 << 8) - 1);
 }
 
 void pciWrite32(uint32 addr, uint32 value)
@@ -208,37 +208,42 @@ void CheckBus(uint8 bus)
 
 void CheckFunction(uint8 bus, uint8 device, uint8 function)
 {
-    struct PciDevice_t PciDevice;
-    uint32 address = 0x80000000 | (bus << 16) | (device << 11) | (function << 8);
-    ReadConfigData(&PciDevice, address);
-    if(PciDevice.VendorID == 0xFFFF || PciDevice.VendorID == 0x0000) return;
     PciDevices[lastPciDevice] = kmalloc(sizeof(struct PciDevice_t));
-    memcpy_fast(PciDevices[lastPciDevice], &PciDevice, sizeof(struct PciDevice_t)); /*+3 and -3 mean we ignore Bus, device and function fields*/
+
+    uint32 address = 0x80000000 | (bus << 16) | ((device & 0x1F) << 11) | ((function & 7) << 8);
+    ReadConfigData(PciDevices[lastPciDevice], address);
+
+    if(PciDevices[lastPciDevice]->VendorID == 0xFFFF || PciDevices[lastPciDevice]->VendorID == 0x0000)
+    {
+        free(PciDevices[lastPciDevice]);
+        return;
+    }
+    
     PciDevices[lastPciDevice]->Bus = bus;
     PciDevices[lastPciDevice]->Device = device;
     PciDevices[lastPciDevice]->Function = function;
     PciDevices[lastPciDevice]->MMIO = false; //We will say false, until MCFG says otherwise
     PciDevices[lastPciDevice]->Address = address;
+
     //Here we will check whatever pci device we want to check
-    if(PciDevice.Class == 1 && PciDevice.SubClass == 1)
+    if(PciDevices[lastPciDevice]->Class == 1 && PciDevices[lastPciDevice]->SubClass == 1)
     {
-        init_ata(PciDevice.PciDefaultHeader.BAR[4] & 0xFFFFFFFC);//Initialize queue,etc but now we provide the busmaster information
-        //pciWrite16(address | 4, pciRead16(address | 4) | 7); //Enable I/O Flag, Mem flag & Bus Enable flag
-        //pciWrite16(address | 5, pciRead16(address | 5) | 7); //Same as above but for channel 1
-        //pciWrite16(address | 0x48, 0xF); //Enable UDMA on the controller
-        //If i do those three pciWrite16 then the ata controller stops working on qemu. WTF
+        pciWrite16(address | 4, 5); //Enable I/O Flag & Bus master Enable flag on channel 0
+        pciWrite16(address | 5, 5); //Enable I/O Flag & Bus master Enable flag on channel 5
+
+        init_ata(PciDevices[lastPciDevice]->PciDefaultHeader.BAR[4] & 0xFFFFFFFC);//Initialize queue,etc but now we provide the busmaster information
     }
+
     //End of checking :)
     lastPciDevice++;
-    if(PciDevice.Class == 0x6 && PciDevice.SubClass == 0x9) //PCI 2 PCI Bridge
+    if(PciDevices[lastPciDevice]->Class == 0x6 && PciDevices[lastPciDevice]->SubClass == 0x9) //PCI 2 PCI Bridge
     {
-        CheckBus(PciDevice.PCItoPCIHeader.SecondaryBusNumber);
+        CheckBus(PciDevices[lastPciDevice]->PCItoPCIHeader.SecondaryBusNumber);
     }
 }
 
 void PciInit()
 {
-
     lastPciDevice = 0;
     PciDevices = kmalloc(32 * 8); //Up to 32 devices per bus, 8 buses in total
     struct PciDevice_t PciDevice;

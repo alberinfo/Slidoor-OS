@@ -5,7 +5,7 @@
 
 int shift = 0;
 int str_buff_pos = 0;
-string str_buffer = ""; //hundred chars
+string str_buffer = 0; //up to 100 chars.
 
 uint8 kbd_map[0x56] = {
     0/*null*/, 27/*escape*/, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
@@ -42,6 +42,11 @@ signed char shift_kbd_map[] = {
     0, 0, 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '"', '~',
     0, '|', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?', 0, 0, 0, ' '
 };
+
+void kbBufferInit()
+{
+    str_buffer = kmalloc(100);
+}
 
 void kbd_handler()
 {

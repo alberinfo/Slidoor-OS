@@ -6,7 +6,7 @@ bool acpiParseDSDT(uint32 *ptr)
 {
 	char* packagePtr = ((char*)ptr + 36); //The first 36 bytes are not aml encoded, but normal DSDT header info.
     int dsdtLength = (*(uint32*)((char*)ptr + 4)) - 36;
-    
+
     AcpiEvalAML(packagePtr, dsdtLength); //Lets parse this table!
 
     setRTCenturyReg(acpi_pm_info->facp->Century);

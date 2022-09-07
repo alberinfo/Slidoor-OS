@@ -68,13 +68,9 @@ int memcmp_fast(const void *_s1, const void *_s2, uint32 _n)
 	const uint32 *us1 = (const uint32 *)_s1;
 	const uint32 *us2 = (const uint32 *)_s2;
 	_n /= sizeof(uint32);
-	int i = 0;
 	while(_n-- != 0) {
-		if(*us1 != *us2){
-			return i;//(*us1 < *us2) ? -1 : +1;
-		}
-    ++i;
-		us1++;
+		if(*us1 != *us2) return (*us1 < *us2) ? -1 : +1;
+    	us1++;
 		us2++;
 	}
 	return 0;
@@ -386,41 +382,41 @@ void *memcpy_fast(volatile void * _dest, volatile void *_src, uint32 _n)
 
 void memzero(void *_src, uint64 _n)
 {
-	if(cpu_info.AVX == 0) asm("pxor %xmm0, %xmm0");
-	else if(cpu_info.AVX == 1) asm("vpxor %xmm0, %xmm0, %xmm0");
-	else if(cpu_info.AVX == 2) asm("vpxor %ymm0, %ymm0, %ymm0");
-	else asm("vpxorq %zmm0, %zmm0, %zmm0");
+	if(cpu_info.AVX == 0) asm("pxor %%xmm0, %%xmm0" : : :);
+	else if(cpu_info.AVX == 1) asm("vpxor %%xmm0, %%xmm0, %%xmm0" : : :);
+	else if(cpu_info.AVX == 2) asm("vpxor %%ymm0, %%ymm0, %%ymm0" : : :);
+	else asm("vpxorq %%zmm0, %%zmm0, %%zmm0" : : :);
 	while(_n)
 	{
 		asm("mov %0, %%rdi" : : "g" (_src));
-		if(_n >= 64 && ((uint64)_src & 63) == 0 && cpu_info.AVX > 2)
+		if(_n >= 64 && cpu_info.AVX > 2)
 		{
-			asm("vmovdqa64 %zmm0, (%rdi)");
+			asm("vmovdqu64 %%zmm0, (%%rdi)" : : :);
 			_src += 64;
 			_n -= 64;
-		} else if(_n >= 32 && ((uint64)_src & 31) == 0 && cpu_info.AVX > 0) {
-			asm("vmovdqa %ymm0, (%rdi)");
+		} else if(_n >= 32 && cpu_info.AVX > 0) {
+			asm("vmovdqu %%ymm0, (%%rdi)" : : :);
 			_src += 32;
 			_n -= 32;
-		} else if(_n >= 16 && ((uint64)_src & 15) == 0) {
-			if(cpu_info.AVX) asm("vmovdqa %xmm0, (%rdi)");
-			else asm("movdqa %xmm0, (%rdi)");
+		} else if(_n >= 16) {
+			if(cpu_info.AVX) asm("vmovdqu %%xmm0, (%%rdi)" : : :);
+			else asm("movdqu %%xmm0, (%%rdi)" : : :);
 			_src += 16;
 			_n -= 16;
-		} else if (_n >= 8 && ((uint64)_src & 7) == 0) {
+		} else if (_n >= 8) {
 			*(uint64*)_src ^= *(uint64*)_src;
 			_src += 8;
 			_n -= 8;
-		} else if(_n >= 4 && ((uint64)_src & 3) == 0) {
+		} else if(_n >= 4) {
 			*(uint32*)_src ^= *(uint32*)_src;
 			_src += 4;
 			_n -= 4;
-		} else if(_n >= 2 && ((uint64)_src & 1) == 0) {
+		} else if(_n >= 2) {
 			*(uint16*)_src ^= *(uint16*)_src;
 			_src += 2;
 			_n -= 2;
 		} else {
-			*(uint8*)_src ^= *(uint8*)_src;
+			*(uint64*)_src ^= *(uint64*)_src;
 			_src++;
 			_n--;
 		}

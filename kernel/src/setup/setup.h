@@ -9,6 +9,7 @@
 #include "../drivers/kb/kb.h"
 #include "../grub/multiboot.h"
 #include "../console/fonts.h"
+#include "../drivers/acpi/interpreter/namespace.h"
 #include "../drivers/energy/energy.h"
 #include "../arch/x86/isr.h"
 #include "../memory/paging.h"
